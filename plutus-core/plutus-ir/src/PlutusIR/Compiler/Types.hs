@@ -48,17 +48,28 @@ instance PLC.HasKindCheckConfig (PirTCConfig uni fun) where
 instance PLC.HasTypeCheckConfig (PirTCConfig uni fun) uni fun where
     typeCheckConfig = pirConfigTCConfig
 
+data DatatypeStyle = ScottEncoding | SumsOfProducts
+    deriving stock (Show)
+
+data DatatypeCompilationOpts = DatatypeCompilationOpts
+    { _dcoStyle :: DatatypeStyle
+    } deriving stock (Show)
+
+makeLenses ''DatatypeCompilationOpts
+
 data CompilationOpts a = CompilationOpts {
     _coOptimize                   :: Bool
     , _coPedantic                 :: Bool
     , _coVerbose                  :: Bool
     , _coDebug                    :: Bool
-    , _coMaxSimplifierIterations  :: Int
+    , _coDatatypes                :: DatatypeCompilationOpts
     -- Simplifier passes
+    , _coMaxSimplifierIterations  :: Int
     , _coDoSimplifierUnwrapCancel :: Bool
     , _coDoSimplifierBeta         :: Bool
     , _coDoSimplifierInline       :: Bool
     , _coInlineHints              :: InlineHints PLC.Name (Provenance a)
+    -- Profiling
     , _coProfile                  :: Bool
     } deriving stock (Show)
 
@@ -70,6 +81,7 @@ defaultCompilationOpts = CompilationOpts
   , _coPedantic = False
   , _coVerbose = False
   , _coDebug = False
+  , _coDatatypes = DatatypeCompilationOpts SumsOfProducts
   , _coMaxSimplifierIterations = 12
   , _coDoSimplifierUnwrapCancel = True
   , _coDoSimplifierBeta = True
