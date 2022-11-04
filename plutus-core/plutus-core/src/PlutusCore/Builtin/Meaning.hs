@@ -31,11 +31,12 @@ import PlutusCore.Evaluation.Machine.ExBudget
 import PlutusCore.Evaluation.Machine.ExMemory
 import PlutusCore.Name
 
+import Control.DeepSeq
 import Data.Array
 import Data.Kind qualified as GHC
 import Data.Proxy
 import Data.Some.GADT
-import GHC.Exts (inline, oneShot)
+import GHC.Exts (inline, lazy, oneShot)
 import GHC.TypeLits
 
 -- | Turn a list of Haskell types @args@ into a functional type ending in @res@.
@@ -346,7 +347,7 @@ instance
         BuiltinMeaning (knownPolytype @binds @val @args @res) f $
             -- See Note [Optimizations of runCostingFun*] for why we use strict @case@.
             \cost ->
-                case toExF cost of
+                lazy $ case toExF cost of
                     !exF -> toPolyF @binds @val @args @res $ pure (f, exF)
     {-# INLINE makeBuiltinMeaning #-}
 
@@ -362,7 +363,9 @@ toBuiltinsRuntime
     :: (cost ~ CostingPart uni fun, ToBuiltinMeaning uni fun, HasMeaningIn uni val)
     => BuiltinVersion fun -> cost -> BuiltinsRuntime fun val
 toBuiltinsRuntime ver cost =
-    let arr = tabulateArray $ toBuiltinRuntime cost . inline toBuiltinMeaning ver
-    in -- Force array elements to WHNF
-        foldr seq (BuiltinsRuntime arr) arr
+    let runtime = BuiltinsRuntime $ toBuiltinRuntime cost . inline toBuiltinMeaning ver
+        {-# INLINE runtime #-}
+       -- Force array elements to WHNF. Inlining 'force' manually, since it doesn't have an
+       -- @INLINE@ pragma.
+    in runtime `deepseq` runtime
 {-# INLINE toBuiltinsRuntime #-}
