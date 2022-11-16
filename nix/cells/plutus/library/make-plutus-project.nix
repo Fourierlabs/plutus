@@ -24,9 +24,11 @@ let
     };
 
     inputMap = { "https://input-output-hk.github.io/cardano-haskell-packages" = inputs.CHaP; };
-    # No source-repository-packages right now
-    sha256map = { };
 
+    sha256map = {
+      "https://github.com/bezirg/HaskellR.git"."b3b001410aa7bf0b9e3a675a027bfe2b8421d8d2" =
+        "sha256-H2Oz3Nn4n3S/gJ9bYHWZSxHTBg4JE9Cap6xNQseS5i8=";
+    };
     # TODO: move this into the cabal.project using the new conditional support?
     # Configuration settings needed for cabal configure to work when cross compiling
     # for windows. We can't use `modules` for these as `modules` are only applied
