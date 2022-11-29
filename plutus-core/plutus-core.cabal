@@ -186,6 +186,14 @@ library
     UntypedPlutusCore.Evaluation.Machine.Cek
     UntypedPlutusCore.Evaluation.Machine.Cek.CekMachineCosts
     UntypedPlutusCore.Evaluation.Machine.Cek.Internal
+
+    UntypedPlutusCore.Evaluation.Machine.Cek.Debug.Internal
+    UntypedPlutusCore.Evaluation.Machine.Cek.Debug.Debugger
+    UntypedPlutusCore.Evaluation.Machine.Cek.Debug.Client.Common
+    UntypedPlutusCore.Evaluation.Machine.Cek.Debug.Client.CLI
+    UntypedPlutusCore.Evaluation.Machine.Cek.Debug.Client.TUI
+    UntypedPlutusCore.Evaluation.Machine.Cek.Debug.Client.Mock
+
     UntypedPlutusCore.MkUPlc
     UntypedPlutusCore.Parser
     UntypedPlutusCore.Rename
@@ -331,6 +339,7 @@ library
     , unordered-containers
     , witherable
     , word-array                  ^>=1.1
+    , free -any
 
   if impl(ghc <9.0)
     build-depends: integer-gmp
@@ -509,6 +518,7 @@ test-suite untyped-plutus-core-test
     Evaluation.Golden
     Evaluation.Machines
     Evaluation.Regressions
+    Evaluation.Debug
     Generators
     Transform.Simplify
 
