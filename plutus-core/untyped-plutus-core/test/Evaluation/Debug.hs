@@ -1,4 +1,5 @@
 {-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE OverloadedLists #-}
 module Evaluation.Debug
     ( test_debug
     ) where
@@ -27,7 +28,7 @@ goldenVsDebug (name,cmds,term) =
     (BS.pack . unlines <$> mock cmds term)
 
 examples :: [(String, [Cmd], DTerm DefaultUni DefaultFun)]
-examples = [ ("ex1", [], Error ())
-           , ("ex2", [Exit], Error ())
+examples = [ ("ex1", [], Error [])
+           , ("ex2", [Exit], Error [])
            ]
 

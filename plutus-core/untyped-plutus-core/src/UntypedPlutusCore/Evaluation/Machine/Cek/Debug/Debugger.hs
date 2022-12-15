@@ -4,6 +4,7 @@
 {-# LANGUAGE ConstraintKinds #-}
 module UntypedPlutusCore.Evaluation.Machine.Cek.Debug.Debugger where
 
+import Annotation
 import UntypedPlutusCore
 import UntypedPlutusCore.Evaluation.Machine.Cek.Debug.Internal
 import Universe.Core
@@ -18,12 +19,12 @@ import Data.Sequence as Seq
 import Data.Coerce
 import GHC.Exts
 
--- FIXME: stub, change to PlutusTx.Code.SrcSpan
-type SrcSpan = ()
-type Breakpoint = SrcSpan
+-- usually it is a line, but let's treat more generally as a srcspan
+newtype Breakpoint = Breakpoint { unBreakpoint :: SrcSpan }
+    deriving newtype (Show, Pretty)
 
 -- | The terms that we can debug
-type DTerm uni fun = Term NamedDeBruijn uni fun SrcSpan
+type DTerm uni fun = Term NamedDeBruijn uni fun SrcSpans
 
 -- commands that the debugger can receive fromthe debug-client (tui,cli,test,etc)
 data Cmd
@@ -76,7 +77,7 @@ atBreakpoint newDState =
     (newDState ^? dCekState . cekStateClosure . closureTerm . to termAnn) -- look at the SrcSpan of the Control term
   where
     -- FIXME: stub, implement this, could we use PlutusLedgerAPI.V1.Interval api for it?
-    contain :: Seq Breakpoint -> Maybe SrcSpan -> Bool
+    contain :: Seq Breakpoint -> Maybe SrcSpans -> Bool
     contain _bs = \case
         Nothing -> False
         Just _srcSpan -> False -- todo

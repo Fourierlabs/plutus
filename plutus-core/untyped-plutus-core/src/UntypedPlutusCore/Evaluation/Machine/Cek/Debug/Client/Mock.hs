@@ -31,6 +31,7 @@ mock :: ( Ix fun, PrettyUni uni fun, GivenCekReqs uni fun RealWorld
      -> IO [String] -- ^ mocking output
 mock cmds = cekMToIO . runMocking . mockerInterprets . debugger
     where
+      -- TODO: use cutoff or partialIterT to prevent runaway
       mockerInterprets = iterTM handle
       runMocking m = fmap snd $ execRWST m cmds ()
 
