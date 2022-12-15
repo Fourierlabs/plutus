@@ -70,6 +70,7 @@ library
     Data.MultiSet.Lens
     Data.SatInt
     ErrorCode
+    Annotation
     PlutusCore
     PlutusCore.Builtin
     PlutusCore.Builtin.Debug
@@ -233,7 +234,6 @@ library
     PlutusCore.Default.Builtins
     PlutusCore.Default.Universe
     PlutusCore.Eq
-    PlutusCore.InlineUtils
     PlutusCore.Parser.Builtin
     PlutusCore.Parser.ParserCommon
     PlutusCore.Parser.Type
