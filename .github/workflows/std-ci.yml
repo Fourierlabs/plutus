@@ -36,7 +36,7 @@ jobs:
     name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
     runs-on: ubuntu-latest
     steps:
-      - uses: Pacman99/std-action/run@fix-empty-key
+      - uses: divnix/std-action/run@main
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
