@@ -42,11 +42,12 @@ jobs:
             ${{ needs.discover.outputs.nix_conf }}
           json: ${{ toJSON(matrix.target) }}
           # optional:
-          github_pat: ${{ secrets.HUB_PAT }}
+          # github_pat: ${{ secrets.HUB_PAT }} Only needed for private repos
           nix_key: ${{ secrets.NIX_SECRET_KEY }}
           s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          nix_ssh_key: ${{ secrets.NIXBUILD_SSH }}
-          cache: s3://nix?endpoint=sfo3.digitaloceanspaces.com
-          builder: ssh-ng://eu.nixbuild.net
-          ssh_known_hosts: "eu.nixbuild.net ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPIQCZc54poJ8vqawd8TraNryQeJnvH1eLpIDgbiqymM"
+          cache: s3://iohk-dapps-ci-cache
+          # For use with nixbuild
+          # nix_ssh_key: ${{ secrets.NIXBUILD_SSH }}
+          # builder: ssh-ng://eu.nixbuild.net
+          # ssh_known_hosts: "eu.nixbuild.net ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPIQCZc54poJ8vqawd8TraNryQeJnvH1eLpIDgbiqymM"
