@@ -300,7 +300,7 @@ library
     , filepath
     , flat
     , ghc-prim
-    , hashable                    >=1.4
+    , hashable
     , hedgehog                    >=1.0
     , index-envs
     , int-cast
