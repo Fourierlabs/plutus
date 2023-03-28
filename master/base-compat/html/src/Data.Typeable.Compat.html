@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE CPP, NoImplicitPrelude #-}</span><span class="hs-cpp">
+#if __GLASGOW_HASKELL__ &gt;= 702
+</span><span class="hs-pragma">{-# LANGUAGE Trustworthy #-}</span><span class="hs-cpp">
+#endif
+</span><span class="hs-cpp">#if MIN_VERSION_base(4,10,0) &amp;&amp; !(MIN_VERSION_base(4,18,0))
+</span><span class="hs-pragma">{-# LANGUAGE PolyKinds #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE TypeOperators #-}</span><span class="hs-cpp">
+#endif
+</span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Data.Typeable.Compat</span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-keyword">module</span><span> </span><span class="annot"><span class="hs-identifier">Base</span></span><span class="hs-cpp">
+#if MIN_VERSION_base(4,10,0)
+</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Data.Typeable.Compat.html#heqT"><span class="hs-identifier">heqT</span></a></span><span class="hs-cpp">
+#endif
+</span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier">Data.Typeable</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Base</span></span><span class="hs-cpp">
+
+#if MIN_VERSION_base(4,10,0) &amp;&amp; !(MIN_VERSION_base(4,18,0))
+</span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Prelude.Compat.html"><span class="hs-identifier">Prelude.Compat</span></a></span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Type.Reflection.Compat.html"><span class="hs-identifier">Type.Reflection.Compat</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">TR</span></span><span class="hs-cpp">
+#endif
+</span><span class="hs-cpp">
+#if MIN_VERSION_base(4,10,0) &amp;&amp; !(MIN_VERSION_base(4,18,0))
+</span><span class="hs-comment">-- | Extract a witness of heterogeneous equality of two types</span><span>
+</span><span id="line-27"></span><span class="hs-comment">--</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- /Since: 4.18.0.0/</span><span>
+</span><span id="line-29"></span><span class="annot"><a href="Data.Typeable.Compat.html#heqT"><span class="hs-identifier hs-type">heqT</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621679042524"><span class="annot"><a href="#local-6989586621679042524"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span id="local-6989586621679042523"><span class="annot"><a href="#local-6989586621679042523"><span class="hs-identifier hs-type">b</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-type">Typeable</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679042524"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-type">Typeable</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679042523"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679042524"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-operator hs-type">:~~:</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679042523"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span id="heqT"><span class="annot"><span class="annottext">heqT :: forall {k1} {k2} (a :: k1) (b :: k2).
+(Typeable a, Typeable b) =&gt;
+Maybe (a :~~: b)
+</span><a href="Data.Typeable.Compat.html#heqT"><span class="hs-identifier hs-var hs-var">heqT</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TypeRep a
+</span><a href="#local-6989586621679042508"><span class="hs-identifier hs-var">ta</span></a></span><span> </span><span class="annot"><span class="annottext">forall k1 k2 (a :: k1) (b :: k2).
+TypeRep a -&gt; TypeRep b -&gt; Maybe (a :~~: b)
+</span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-operator hs-var">`TR.eqTypeRep`</span></a></span><span> </span><span class="annot"><span class="annottext">TypeRep b
+</span><a href="#local-6989586621679042506"><span class="hs-identifier hs-var">tb</span></a></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-32"></span><span>    </span><span id="local-6989586621679042508"><span class="annot"><span class="annottext">ta :: TypeRep a
+</span><a href="#local-6989586621679042508"><span class="hs-identifier hs-var hs-var">ta</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall {k} (a :: k). Typeable a =&gt; TypeRep a
+</span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var">TR.typeRep</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-type">TR.TypeRep</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679042524"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-33"></span><span>    </span><span id="local-6989586621679042506"><span class="annot"><span class="annottext">tb :: TypeRep b
+</span><a href="#local-6989586621679042506"><span class="hs-identifier hs-var hs-var">tb</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall {k} (a :: k). Typeable a =&gt; TypeRep a
+</span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var">TR.typeRep</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-type">TR.TypeRep</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679042523"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-cpp">
+#endif
+</span></pre></body></html>
