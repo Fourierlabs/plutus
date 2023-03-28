@@ -12,22 +12,24 @@ repository cardano-haskell-packages
 
 -- See CONTRIBUTING for some Nix commands you will need to run if you
 -- update either of these.
--- Bump this if you need newer packages from Hackage
-index-state: 2022-10-31T00:00:00Z
--- Bump this if you need newer packages from CHaP
-index-state: cardano-haskell-packages 2022-10-24T00:00:00Z
+
+-- repeating hackage index-state to work around haskell.nix parsing limitation
+index-state: 2023-03-24T00:00:00Z
+index-state:
+  -- Bump this if you need newer packages from Hackage
+  , hackage.haskell.org 2023-03-24T00:00:00Z
+  -- Bump this if you need newer packages from CHaP
+  , cardano-haskell-packages 2023-03-24T00:00:00Z
 
 packages: doc/read-the-docs-site
           plutus-benchmark
           plutus-conformance
           plutus-core
-          plutus-errors
           plutus-ledger-api
           plutus-metatheory
           plutus-tx
           plutus-tx-plugin
           prettyprinter-configurable
-          word-array
           stubs/plutus-ghc-stub
 
 -- We never, ever, want this.
@@ -41,10 +43,8 @@ benchmarks: true
 -- 'tasty' output.
 test-show-details: direct
 
-if (impl (ghc < 9))
-  -- inline-r doesn't (yet) build on 9.2.4, so only turn it on before that
-  package plutus-core
-    flags: +with-inline-r
+package plutus-core
+  flags: +with-inline-r
 
 -- See https://github.com/input-output-hk/nothunks/issues/17
 package nothunks
@@ -54,10 +54,3 @@ package nothunks
 -- (NOTE this will change to ieee754 in newer versions of nixpkgs).
 extra-packages: ieee, filemanip
 
--- An older version of this package might not generate GEq instances.
--- See https://github.com/obsidiansystems/dependent-sum/issues/72
--- TODO: is there some way we can get this into the cabal files given
--- that we don't depend on it explicitly? Maybe we can add an unused
--- dependency but turn off the warning?
-constraints:
-  dependent-sum >= 0.7.1.0,

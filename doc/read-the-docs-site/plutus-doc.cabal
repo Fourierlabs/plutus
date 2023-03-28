@@ -70,11 +70,11 @@ executable doc-doctests
     , base               >=4.9      && <5
     , bytestring
     , containers
-    , flat
+    , flat               <0.5
     , lens
-    , plutus-core        ^>=1.1
-    , plutus-ledger-api  ^>=1.1
-    , plutus-tx          ^>=1.1
+    , plutus-core        ^>=1.4
+    , plutus-ledger-api  ^>=1.4
+    , plutus-tx          ^>=1.4
     , prettyprinter
     , random
     , serialise

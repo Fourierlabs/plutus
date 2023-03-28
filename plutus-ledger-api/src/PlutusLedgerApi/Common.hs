@@ -11,6 +11,7 @@ module PlutusLedgerApi.Common
       -- * Script evaluation
     , evaluateScriptCounting
     , evaluateScriptRestricting
+    , evaluateTerm
     , VerboseMode (..)
     , LogOutput
     , EvaluationError (..)
@@ -22,10 +23,13 @@ module PlutusLedgerApi.Common
       {-| The network's behaviour (and plutus's by extension) can change via /hard forks/,
       which directly correspond to major-number protocol version bumps.
       -}
-    ,  ProtocolVersion (..)
-    , LedgerPlutusVersion (..)
+    , ProtocolVersion (..)
+    , PlutusLedgerLanguage (..)
+    , Version (..)
     , builtinsIntroducedIn
     , builtinsAvailableIn
+    , ledgerLanguageIntroducedIn
+    , ledgerLanguagesAvailableIn
 
       -- * Network's costing parameters
       {-| A less drastic approach (that does not rely on a HF)
@@ -51,6 +55,10 @@ module PlutusLedgerApi.Common
     , EvaluationContext (..)
     , mkDynEvaluationContext
     , toMachineParameters
+    -- While not strictly used by the ledger, this is useful for people trying to
+    -- reconstruct the term evaluated by the ledger from the arguments, e.g.
+    -- for profiling purposes.
+    , mkTermToEvaluate
     ) where
 
 import PlutusCore.Data as PlutusCore (Data (..))

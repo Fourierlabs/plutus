@@ -21,6 +21,13 @@ let
     shell = {
       # We don't currently use this.
       withHoogle = false;
+
+
+      # We would expect R to be pulled in automatically as it's a dependency of
+      # plutus-core, but it appears it is not, so we need to be explicit about
+      # the dependency on R here.  Adding it as a buildInput will ensure it's
+      # added to the pkg-config env var.
+      buildInputs = [ pkgs.R ];
     };
 
     inputMap = { "https://input-output-hk.github.io/cardano-haskell-packages" = inputs.CHaP; };
@@ -50,7 +57,6 @@ let
         packages = {
           # Things that need plutus-tx-plugin
           plutus-benchmark.package.buildable = false;
-          plutus-errors.package.buildable = false;
           plutus-tx-plugin.package.buildable = false;
           # Needs agda
           plutus-metatheory.package.buildable = false;
@@ -136,27 +142,6 @@ let
             platforms = lib.platforms.linux;
           };
 
-          # Werror everything.
-          # This is a pain, see https://github.com/input-output-hk/haskell.nix/issues/519
-          plutus-core.ghcOptions = [ "-Werror" ];
-
-          # FIXME: has warnings in generated code
-          #plutus-metatheory.package.ghcOptions = "-Werror";
-
-          plutus-benchmark.ghcOptions = [ "-Werror" ];
-          plutus-errors.ghcOptions = [ "-Werror" ];
-          plutus-ledger-api.ghcOptions = [ "-Werror" ];
-          plutus-tx.ghcOptions = [ "-Werror" ];
-          plutus-tx-plugin.ghcOptions = [ "-Werror" ];
-
-          # This package's tests require doctest, which generates Haskell source
-          # code. However, it does not add derivation strategies in said code,
-          # which will fail the build with -Werror. Furthermore, barring an
-          # upstream fix, there's nothing we can do about it other than
-          # disabling -Werror on it.
-          # prettyprinter-configurable.ghcOptions = [ "-Werror" ];
-          word-array.ghcOptions = [ "-Werror" ];
-
           # External package settings
           inline-r.ghcOptions = [ "-XStandaloneKindSignatures" ];
 
@@ -173,6 +158,34 @@ let
           ];
         };
       })
+
+      # -Werror for CI
+      # Only enable on the newer compilers. We don't care about warnings on the old ones,
+      # and sometimes it's hard to be warning free on all compilers, e.g. the unused
+      # packages warning is bad in 8.10.7 (https://gitlab.haskell.org/ghc/ghc/-/merge_requests/6130)
+      (lib.mkIf (compiler-nix-name != "ghc8107") {
+        packages = {
+          # Werror everything.
+          # This is a pain, see https://github.com/input-output-hk/haskell.nix/issues/519
+          plutus-core.ghcOptions = [ "-Werror" ];
+
+          # FIXME: has warnings in generated code
+          #plutus-metatheory.package.ghcOptions = "-Werror";
+
+          plutus-benchmark.ghcOptions = [ "-Werror" ];
+          plutus-ledger-api.ghcOptions = [ "-Werror" ];
+          plutus-tx.ghcOptions = [ "-Werror" ];
+          plutus-tx-plugin.ghcOptions = [ "-Werror" ];
+
+          # This package's tests require doctest, which generates Haskell source
+          # code. However, it does not add derivation strategies in said code,
+          # which will fail the build with -Werror. Furthermore, barring an
+          # upstream fix, there's nothing we can do about it other than
+          # disabling -Werror on it.
+          # prettyprinter-configurable.ghcOptions = [ "-Werror" ];
+        };
+      })
+
     ];
   });
 in

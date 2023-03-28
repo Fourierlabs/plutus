@@ -1,4 +1,3 @@
--- editorconfig-checker-disable-file
 {-# LANGUAGE BangPatterns     #-}
 {-# LANGUAGE LambdaCase       #-}
 {-# LANGUAGE TypeApplications #-}
@@ -23,7 +22,6 @@ import UntypedPlutusCore.Evaluation.Machine.Cek
 import Control.DeepSeq (NFData, force)
 import Criterion.Main
 import Data.ByteString qualified as BS
-import Data.Ix (Ix)
 import Data.Typeable (Typeable)
 
 type PlainTerm uni fun = UPLC.Term Name uni fun ()
@@ -74,8 +72,8 @@ copyData =
 ---------------- Creating benchmarks ----------------
 
 benchWith
-    :: (Ix fun, Pretty fun, Typeable fun)
-    => MachineParameters CekMachineCosts CekValue DefaultUni fun
+    :: (Pretty fun, Typeable fun)
+    => MachineParameters CekMachineCosts fun (CekValue DefaultUni fun ())
     -> String
     -> PlainTerm DefaultUni fun
     -> Benchmark
@@ -161,7 +159,7 @@ mkApp6
         uni `Includes` d, uni `Includes` e, uni `Includes` f,
         NFData a, NFData b, NFData c, NFData d, NFData e, NFData f)
     => fun -> [Type tyname uni ()] -> a -> b -> c -> d -> e -> f-> PlainTerm uni fun
-mkApp6 name tys (force -> !x) (force -> !y) (force -> !z) (force -> !t) (force -> !u) (force -> !v) =
+mkApp6 name tys (force -> !x) (force -> !y) (force -> !z) (force -> !t) (force -> !u) (force -> !v)=
     eraseTerm $ mkIterApp () instantiated [mkConstant () x, mkConstant () y, mkConstant () z,
                                        mkConstant () t, mkConstant () u, mkConstant () v]
     where instantiated = mkIterInst () (builtin () name) tys
@@ -240,7 +238,10 @@ createThreeTermBuiltinBenchElementwise
     -> [(a,b,c)]
     -> Benchmark
 createThreeTermBuiltinBenchElementwise name tys inputs =
-    bgroup (show name) $ map (\(x, y, z) -> bgroup (showMemoryUsage x) [bgroup (showMemoryUsage y) [mkBM x y z]]) inputs
+    bgroup (show name) $
+        map
+            (\(x, y, z) -> bgroup (showMemoryUsage x) [bgroup (showMemoryUsage y) [mkBM x y z]])
+            inputs
         where mkBM x y z = benchDefault (showMemoryUsage z) $ mkApp3 name tys x y z
 -- TODO: throw an error if xmem != ymem?  That would suggest that the caller has
 -- done something wrong.

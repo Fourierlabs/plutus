@@ -23,7 +23,6 @@ open import Builtin using (Builtin;equals)
 open Builtin.Builtin
 
 open import Raw using (decBuiltin)
-open import Algorithmic using (arity;Term;Type)
 
 open import Agda.Builtin.String using (primStringFromList; primStringAppend; primStringEquality)
 open import Data.Nat using (ℕ;suc;zero)
@@ -65,7 +64,7 @@ uglyTermCon unit = "()"
 uglyTermCon (string s) = "(string " ++ s ++ ")"
 uglyTermCon (bool false) = "(bool " ++ "false" ++ ")"
 uglyTermCon (bool true) = "(bool " ++ "true" ++ ")"
-uglyTermCon (Data d) = "(DATA)"
+uglyTermCon (pdata d) = "(DATA)"
 
 {-# FOREIGN GHC import qualified Data.Text as T #-}
 

@@ -18,6 +18,7 @@ open _≡β_
 open import Type.RenamingSubstitution using (weaken;ren;_[_];sub-cons;Sub;sub)
 import Declarative as Syn
 import Algorithmic as Norm
+import Algorithmic.Signature as Norm
 open import Type.BetaNormal using (embNf;weakenNf;ne;_⊢Nf⋆_;_⊢Ne⋆_)
 open _⊢Nf⋆_
 open _⊢Ne⋆_
@@ -78,7 +79,7 @@ nfTypeTC (STermCon.bytestring b) = NTermCon.bytestring b
 nfTypeTC (STermCon.string s)     = NTermCon.string s
 nfTypeTC (STermCon.bool b)       = NTermCon.bool b
 nfTypeTC STermCon.unit           = NTermCon.unit
-nfTypeTC (STermCon.Data d)       = NTermCon.Data d
+nfTypeTC (STermCon.pdata d)       = NTermCon.pdata d
 
 lemσ : ∀{Γ Δ Δ'}
   → (σ : Sub Δ Γ)

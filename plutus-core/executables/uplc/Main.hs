@@ -1,32 +1,49 @@
 {-# LANGUAGE BangPatterns              #-}
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE ImplicitParams            #-}
+{-# LANGUAGE LambdaCase                #-}
+{-# LANGUAGE MultiParamTypeClasses     #-}
 {-# LANGUAGE OverloadedStrings         #-}
 {-# LANGUAGE TypeApplications          #-}
+{-# LANGUAGE TypeSynonymInstances      #-}
 
+{-# OPTIONS_GHC -Wno-orphans #-}
 module Main (main) where
 
 import PlutusCore qualified as PLC
+import PlutusCore.Annotation
 import PlutusCore.Evaluation.Machine.ExBudget (ExBudget (..), ExRestrictingBudget (..))
 import PlutusCore.Evaluation.Machine.ExBudgetingDefaults qualified as PLC
 import PlutusCore.Evaluation.Machine.ExMemory (ExCPU (..), ExMemory (..))
+import PlutusCore.Evaluation.Machine.MachineParameters
 import PlutusCore.Executable.Common
 import PlutusCore.Executable.Parsers
 
 import Data.Foldable
-import Data.Functor (void)
 import Data.List (nub)
 import Data.List.Split (splitOn)
+import Data.Maybe (fromJust)
+import Data.Proxy
 import Data.Text qualified as T
+import PlutusPrelude
 
 import UntypedPlutusCore qualified as UPLC
+import UntypedPlutusCore.DeBruijn
 import UntypedPlutusCore.Evaluation.Machine.Cek qualified as Cek
+import UntypedPlutusCore.Evaluation.Machine.Cek.StepCounter (newCounter)
 
-import Control.DeepSeq (NFData, rnf)
-import Control.Lens
+import Control.DeepSeq (rnf)
+import Control.Monad.Except
 import Options.Applicative
+import Prettyprinter
 import System.Exit (exitFailure)
 import System.IO (hPrint, stderr)
 import Text.Read (readMaybe)
+
+import Control.Monad.ST (RealWorld)
+import System.Console.Haskeline qualified as Repl
+import UntypedPlutusCore.Evaluation.Machine.Cek.Debug.Driver qualified as D
+import UntypedPlutusCore.Evaluation.Machine.Cek.Debug.Internal qualified as D
 
 uplcHelpText :: String
 uplcHelpText = helpText "Untyped Plutus Core"
@@ -44,6 +61,9 @@ data SomeBudgetMode =
 data EvalOptions =
     EvalOptions Input Format PrintMode BudgetMode TraceMode Output TimingMode CekModel
 
+data DbgOptions =
+    DbgOptions Input Format CekModel
+
 ---------------- Main commands -----------------
 
 data Command = Apply     ApplyOptions
@@ -51,6 +71,7 @@ data Command = Apply     ApplyOptions
              | Print     PrintOptions
              | Example   ExampleOptions
              | Eval      EvalOptions
+             | Dbg     DbgOptions
              | DumpModel
              | PrintBuiltinSignatures
 
@@ -69,6 +90,11 @@ evalOpts =
   EvalOptions <$>
     input <*> inputformat <*>
         printmode <*> budgetmode <*> tracemode <*> output <*> timingmode <*> cekmodel
+
+dbgOpts :: Parser DbgOptions
+dbgOpts =
+  DbgOptions <$>
+    input <*> inputformat <*> cekmodel
 
 -- Reader for budget.  The --restricting option requires two integer arguments
 -- and the easiest way to do this is to supply a colon-separated pair of
@@ -152,6 +178,9 @@ plutusOpts = hsubparser (
     <> command "evaluate"
            (info (Eval <$> evalOpts)
             (progDesc "Evaluate an untyped Plutus Core program using the CEK machine."))
+    <> command "debug"
+           (info (Dbg <$> dbgOpts)
+            (progDesc "Debug an untyped Plutus Core program using the CEK machine."))
     <> command "dump-model"
            (info (pure DumpModel)
             (progDesc "Dump the cost model parameters"))
@@ -167,11 +196,11 @@ plutusOpts = hsubparser (
 runApply :: ApplyOptions -> IO ()
 runApply (ApplyOptions inputfiles ifmt outp ofmt mode) = do
   scripts <-
-    mapM ((getProgram ifmt ::  Input -> IO (UplcProg PLC.SourcePos)) . FileInput) inputfiles
+    mapM ((getProgram ifmt ::  Input -> IO (UplcProg SrcSpan)) . FileInput) inputfiles
   let appliedScript =
         case void <$> scripts of
           []          -> errorWithoutStackTrace "No input files"
-          progAndargs -> foldl1 UPLC.applyProgram progAndargs
+          progAndargs -> foldl1 (fromJust .* UPLC.applyProgram) progAndargs
   writeProgram outp ofmt mode appliedScript
 
 ---------------- Evaluation ----------------
@@ -218,6 +247,77 @@ runEval (EvalOptions inp ifmt printMode budgetMode traceMode outputMode timingMo
                         None -> pure ()
                         _    -> writeToFileOrStd outputMode (T.unpack (T.intercalate "\n" logs))
 
+---------------- Debugging ----------------
+
+runDbg :: DbgOptions -> IO ()
+runDbg (DbgOptions inp ifmt cekModel) = do
+    prog <- getProgram ifmt inp
+    let term = prog ^. UPLC.progTerm
+        !_ = rnf term
+        nterm = fromRight (error "Term to debug must be closed.") $
+                   runExcept @FreeVariableError $ deBruijnTerm term
+    let cekparams = case cekModel of
+                    -- AST nodes are charged according to the default cost model
+                    Default -> PLC.defaultCekParameters
+                    -- AST nodes are charged one unit each, so we can see how many times each node
+                    -- type is encountered.  This is useful for calibrating the budgeting code
+                    Unit    -> PLC.unitCekParameters
+        MachineParameters costs runtime = cekparams
+        replSettings = Repl.Settings { Repl.complete = Repl.noCompletion
+                                     , Repl.historyFile = Nothing
+                                     , Repl.autoAddHistory = False
+                                     }
+
+    ctr <- newCounter (Proxy @D.CounterSize)
+    let ?cekRuntime = runtime
+        ?cekEmitter = const $ pure ()
+        ?cekBudgetSpender = Cek.CekBudgetSpender $ \_ _ -> pure ()
+        ?cekCosts = costs
+        ?cekSlippage = D.defaultSlippage
+        ?cekStepCounter = ctr
+      in Repl.runInputT replSettings $
+            -- MAYBE: use cutoff or partialIterT to prevent runaway
+            D.iterTM handleDbg $ D.runDriver nterm
+
+-- TODO: this is just an example of an optional single breakpoint, decide
+-- if we actually want breakpoints for the cli
+newtype MaybeBreakpoint = MaybeBreakpoint { _fromMaybeBreakpoint :: Maybe SrcSpan }
+type DAnn = SrcSpan
+instance D.Breakpointable DAnn MaybeBreakpoint where
+    hasBreakpoints = error "Not implemented: Breakpointable DAnn Breakpoints"
+
+-- Peel off one layer
+handleDbg :: (Cek.PrettyUni uni fun, D.GivenCekReqs uni fun DAnn RealWorld)
+          => D.DebugF uni fun DAnn MaybeBreakpoint (Repl.InputT IO ())
+          -> Repl.InputT IO ()
+handleDbg = \case
+    D.StepF prevState k  -> do
+        -- Note that we first turn Cek to IO and then `liftIO` it to InputT; the alternative of
+        -- directly using MonadTrans.lift needs MonadCatch+MonadMask instances for CekM, i.e. messy
+        eNewState <- liftIO $ D.cekMToIO $ D.tryHandleStep prevState
+        case eNewState of
+            Right newState -> k newState
+            Left e         -> Repl.outputStrLn $ show e
+                             -- no kontinuation, so it acts like exitSuccess
+                             -- FIXME: decide what should happen after the error occurs
+    D.InputF k           -> handleInput >>= k
+    D.LogF text k        -> handleLog text >> k
+    D.UpdateClientF ds k -> handleUpdate ds >> k
+  where
+    handleInput = do
+        c <- Repl.getInputChar "(s)tep (c)ontinue (n)ext (f)inish (Ctrl+d exit):"
+        -- TODO: implement print "program counter", breakpoints
+        -- MAYBE: switch to repline
+        case c of
+            Just 's' -> pure D.Step
+            Just 'c' -> pure $ D.Continue $ MaybeBreakpoint empty
+            Just 'n' -> pure $ D.Next $ MaybeBreakpoint empty
+            Just 'f' -> pure $ D.Finish $ MaybeBreakpoint empty
+            -- otherwise retry
+            _        -> handleInput
+    handleUpdate s = Repl.outputStrLn $ show $ "Updated state:" <+> pretty s
+    handleLog = Repl.outputStrLn
+
 ----------------- Print examples -----------------------
 runUplcPrintExample ::
     ExampleOptions -> IO ()
@@ -231,6 +331,7 @@ main = do
     case options of
         Apply     opts         -> runApply        opts
         Eval      opts         -> runEval         opts
+        Dbg     opts           -> runDbg         opts
         Example   opts         -> runUplcPrintExample opts
         Print     opts         -> runPrint        opts
         Convert   opts         -> runConvert @UplcProg     opts

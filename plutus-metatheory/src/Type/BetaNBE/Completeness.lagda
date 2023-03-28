@@ -11,7 +11,7 @@ open import Relation.Binary.PropositionalEquality
    using (_≡_;refl;sym;trans;cong;cong₂)
 
 open import Utils using (*;_⇒_;J;K)
-open import Type using (Ctx⋆;Φ;Ψ;Θ;_⊢⋆_;_∋⋆_;S;Z)
+open import Type using (Ctx⋆;_,⋆_;Φ;Ψ;Θ;_⊢⋆_;_∋⋆_;S;Z)
 open _⊢⋆_
 open import Type.Equality using (_≡β_;_≡βTyCon_)
 open _≡β_
@@ -20,7 +20,7 @@ open import Type.RenamingSubstitution using (Ren;ren;renTyCon;ext;Sub;sub;subTyC
 open import Type.BetaNormal using (_⊢Nf⋆_;_⊢Ne⋆_;renNf;renNe;renNfTyCon)
 open _⊢Nf⋆_
 open _⊢Ne⋆_
-open import Type.BetaNBE using (Val;renVal;reflect;reify;Env;_,,⋆_;_·V_;eval;evalTyCon;idEnv;nf)
+open import Type.BetaNBE using (Val;renVal;reflect;reify;Env;_,,⋆_;_·V_;eval;evalTyCon;idEnv;nf;exte)
 open import Type.BetaNormal.Equality using (renNe-cong;renNf-id;renNe-id;renNf-comp;renNe-comp)
 import Builtin.Constant.Type Ctx⋆ (_⊢⋆ *) as Syn
 import Builtin.Constant.Type Ctx⋆ (_⊢Nf⋆ *) as Nf
@@ -295,7 +295,7 @@ idextTyCon p Syn.unit       = refl
 idextTyCon p Syn.bool       = refl
 idextTyCon p (Syn.list A)   = cong Nf.list (idext p A)
 idextTyCon p (Syn.pair A B) = cong₂ Nf.pair (idext p A) (idext p B)
-idextTyCon p Syn.Data       = refl
+idextTyCon p Syn.pdata       = refl
 
 renVal-eval : ∀{Φ Ψ Θ K}
   → (t : Ψ ⊢⋆ K)
@@ -320,7 +320,7 @@ renValTyCon-eval Syn.bool       p ρ = refl
 renValTyCon-eval (Syn.list A)   p ρ = cong Nf.list (renVal-eval A p ρ)
 renValTyCon-eval (Syn.pair A B) p ρ =
   cong₂ Nf.pair (renVal-eval A p ρ) (renVal-eval B p ρ) 
-renValTyCon-eval Syn.Data       p ρ = refl
+renValTyCon-eval Syn.pdata       p ρ = refl
 
 idext p (` x) = p x
 idext p (Π B) =
@@ -409,7 +409,7 @@ renTyCon-eval Syn.bool       p ρ = refl
 renTyCon-eval (Syn.list A)   p ρ = cong Nf.list (ren-eval A p ρ)
 renTyCon-eval (Syn.pair A B) p ρ =
   cong₂ Nf.pair (ren-eval A p ρ) (ren-eval B p ρ) 
-renTyCon-eval Syn.Data       p ρ = refl
+renTyCon-eval Syn.pdata       p ρ = refl
 
 ren-eval (` x) p ρ = p (ρ x)
 ren-eval (Π B) p ρ =
@@ -470,7 +470,7 @@ subTyCon-eval Syn.bool       p ρ = refl
 subTyCon-eval (Syn.list A)   p ρ = cong Nf.list (sub-eval A p ρ)
 subTyCon-eval (Syn.pair A B) p ρ =
   cong₂ Nf.pair (sub-eval A p ρ) (sub-eval B p ρ) 
-subTyCon-eval Syn.Data       p ρ = refl
+subTyCon-eval Syn.pdata       p ρ = refl
 
 sub-eval (` x)      p σ = idext p (σ x)
 sub-eval (Π B)    p σ = cong Π (trans
@@ -569,7 +569,17 @@ idCR : (x : Φ ∋⋆ K) → CR K (idEnv Φ x) (idEnv Φ x)
 idCR x = reflectCR refl
 \end{code}
 
+Finally, the completeness theorem.
+
 \begin{code}
 completeness : {s t : Φ ⊢⋆ K} → s ≡β t → nf s ≡ nf t
 completeness p = reifyCR (fund idCR p)
+\end{code}
+
+A small lemma relating environments.
+
+\begin{code}
+exte-lem : ∀{Ψ J} → EnvCR (exte (idEnv Ψ)) (idEnv (Ψ ,⋆ J))
+exte-lem Z = idCR Z
+exte-lem (S x) = renVal-reflect S (` x)
 \end{code}

@@ -62,7 +62,6 @@ import Data.ByteString.Unsafe qualified as BSUnsafe
 import Data.Either.Validation
 import Data.Map qualified as Map
 import Data.Set qualified as Set
-import ErrorCode (HasErrorCode (errorCode))
 import Prettyprinter qualified as PP
 import System.IO (openTempFile)
 import System.IO.Unsafe (unsafePerformIO)
@@ -221,7 +220,7 @@ runPluginM pctx act = do
     case res of
         Right x -> pure x
         Left err ->
-            let errInGhc = GHC.ProgramError $ "GHC Core to PLC plugin: " ++ show (PP.pretty (errorCode err) <> ":" <> PP.pretty err)
+            let errInGhc = GHC.ProgramError . show $ "GHC Core to PLC plugin:" PP.<+> PP.pretty err
             in liftIO $ GHC.throwGhcExceptionIO errInGhc
 
 -- | Compiles all the marked expressions in the given binder into PLC literals.
@@ -406,6 +405,7 @@ runCompiler moduleName opts expr = do
                  & set (PIR.ccOpts . PIR.coDoSimplifierBeta)               (_posDoSimplifierBeta opts)
                  & set (PIR.ccOpts . PIR.coDoSimplifierInline)             (_posDoSimplifierInline opts)
                  & set (PIR.ccOpts . PIR.coInlineHints)                    hints
+                 & set (PIR.ccOpts . PIR.coRelaxedFloatin) (_posRelaxedFloatin opts)
         plcOpts = PLC.defaultCompilationOpts
             & set (PLC.coSimplifyOpts . UPLC.soMaxSimplifierIterations) (_posMaxSimplifierIterationsUPlc opts)
             & set (PLC.coSimplifyOpts . UPLC.soInlineHints) hints
@@ -413,16 +413,17 @@ runCompiler moduleName opts expr = do
     -- GHC.Core -> Pir translation.
     pirT <- PIR.runDefT annMayInline $ compileExprWithDefs expr
     when (_posDumpPir opts) . liftIO $
-        dumpFlat (PIR.Program () (void pirT)) "initial PIR program" (moduleName ++ ".pir-initial.flat")
+        dumpFlat (PIR.Program () PLC.latestVersion (void pirT)) "initial PIR program" (moduleName ++ ".pir-initial.flat")
 
     -- Pir -> (Simplified) Pir pass. We can then dump/store a more legible PIR program.
     spirT <- flip runReaderT pirCtx $ PIR.compileToReadable pirT
-    let spirP = PIR.Program () . void $ spirT
-    when (_posDumpPir opts) . liftIO $ dumpFlat spirP "simplified PIR program" (moduleName ++ ".pir-simplified.flat")
+    let spirPNoAnn = PIR.Program () PLC.latestVersion $ void $ spirT
+        spirP = PIR.Program mempty PLC.latestVersion . fmap getSrcSpans $ spirT
+    when (_posDumpPir opts) . liftIO $ dumpFlat spirPNoAnn "simplified PIR program" (moduleName ++ ".pir-simplified.flat")
 
     -- (Simplified) Pir -> Plc translation.
     plcT <- flip runReaderT pirCtx $ PIR.compileReadableToPlc spirT
-    let plcP = PLC.Program () (PLC.defaultVersion ()) $ void plcT
+    let plcP = PLC.Program () PLC.latestVersion $ void plcT
     when (_posDumpPlc opts) . liftIO $ dumpFlat plcP "typed PLC program" (moduleName ++ ".plc.flat")
 
     -- We do this after dumping the programs so that if we fail typechecking we still get the dump.
@@ -431,8 +432,9 @@ runCompiler moduleName opts expr = do
 
     uplcT <- flip runReaderT plcOpts $ PLC.compileTerm plcT
     dbT <- liftExcept $ UPLC.deBruijnTerm uplcT
-    let uplcP = UPLC.Program () (PLC.defaultVersion ()) $ void dbT
-    when (_posDumpUPlc opts) . liftIO $ dumpFlat uplcP "untyped PLC program" (moduleName ++ ".uplc.flat")
+    let uplcPNoAnn = UPLC.Program () PLC.latestVersion $ void dbT
+        uplcP = UPLC.Program mempty PLC.latestVersion . fmap getSrcSpans $ dbT
+    when (_posDumpUPlc opts) . liftIO $ dumpFlat uplcPNoAnn "untyped PLC program" (moduleName ++ ".uplc.flat")
     pure (spirP, uplcP)
 
   where
@@ -448,6 +450,9 @@ runCompiler moduleName opts expr = do
         (tPath, tHandle) <- openTempFile "." fileName
         putStrLn $ "!!! dumping " ++ desc ++ " to " ++ show tPath
         BS.hPut tHandle $ flat t
+
+      getSrcSpans :: PIR.Provenance Ann -> SrcSpans
+      getSrcSpans = SrcSpans . Set.unions . fmap (unSrcSpans . annSrcSpans) . toList
 
 -- | Get the 'GHC.Name' corresponding to the given 'TH.Name', or throw an error if we can't get it.
 thNameToGhcNameOrFail :: TH.Name -> PluginM uni fun GHC.Name

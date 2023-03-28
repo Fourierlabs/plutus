@@ -1,4 +1,3 @@
--- editorconfig-checker-disable-file
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes        #-}
@@ -40,7 +39,8 @@ import System.FilePath
 getConfig :: Double -> IO Config
 getConfig limit = do
   templateDir <- getDataFileName ("common" </> "templates")
-  let templateFile = templateDir </> "with-iterations" <.> "tpl" -- Include number of iterations in HTML report
+  -- Include number of iterations in HTML report
+  let templateFile = templateDir </> "with-iterations" <.> "tpl"
   pure $ defaultConfig {
                 template = templateFile,
                 reportFile = Just "report.html",
@@ -65,8 +65,8 @@ toAnonDeBruijnTerm = UPLC.termMapNames (\(UPLC.NamedDeBruijn _ ix) -> UPLC.DeBru
 
 {- | Just extract the body of a program wrapped in a 'CompiledCodeIn'.  We use this a lot. -}
 compiledCodeToTerm
-    :: Tx.CompiledCodeIn DefaultUni DefaultFun () a -> Term
-compiledCodeToTerm (Tx.getPlc -> UPLC.Program _ _ body) = body
+    :: Tx.CompiledCodeIn DefaultUni DefaultFun a -> Term
+compiledCodeToTerm (Tx.getPlcNoAnn -> UPLC.Program _ _ body) = body
 
 {- | Lift a Haskell value to a PLC term.  The constraints get a bit out of control
    if we try to do this over an arbitrary universe.-}
@@ -82,7 +82,10 @@ benchTermCek term =
 
 {- | Just run a term (used for tests etc.) -}
 runTermCek :: Term -> EvaluationResult Term
-runTermCek = unsafeExtractEvaluationResult . (\ (fstT,_,_) -> fstT) . runCekDeBruijn PLC.defaultCekParameters Cek.restrictingEnormous Cek.noEmitter
+runTermCek =
+    unsafeExtractEvaluationResult .
+        (\ (fstT,_,_) -> fstT) .
+            runCekDeBruijn PLC.defaultCekParameters Cek.restrictingEnormous Cek.noEmitter
 
 type Result = EvaluationResult Term
 
@@ -93,4 +96,5 @@ type Result = EvaluationResult Term
    operator so that we can use it with both HUnit Assertions and QuickCheck
    Properties.  -}
 cekResultMatchesHaskellValue :: Tx.Lift DefaultUni a => Term -> (Result -> Result -> b) -> a -> b
-cekResultMatchesHaskellValue term matches value = (runTermCek term) `matches` (runTermCek $ haskellValueToTerm value)
+cekResultMatchesHaskellValue term matches value =
+    (runTermCek term) `matches` (runTermCek $ haskellValueToTerm value)

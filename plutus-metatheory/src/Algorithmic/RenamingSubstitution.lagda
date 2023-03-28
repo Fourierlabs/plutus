@@ -16,7 +16,8 @@ open _⊢Nf⋆_
 open _⊢Ne⋆_
 
 open import Type.BetaNBE.RenamingSubstitution
-open import Algorithmic using (Ctx;_∋_;conv∋;_⊢_;conv⊢;btype-ren;btype-sub)
+open import Algorithmic using (Ctx;_∋_;conv∋;_⊢_;conv⊢)
+open import Algorithmic.Signature using (btype-ren;btype-sub)
 open Ctx
 open _∋_
 open _⊢_
@@ -67,7 +68,7 @@ renTermCon ρ⋆ (bytestring b) = bytestring b
 renTermCon ρ⋆ (string s)     = string s
 renTermCon ρ⋆ (bool b)       = bool b
 renTermCon ρ⋆ unit           = unit
-renTermCon ρ⋆ (Data d)       = Data d
+renTermCon ρ⋆ (pdata d)       = pdata d
 \end{code}
 
 \begin{code}
@@ -155,7 +156,7 @@ subTermCon σ⋆ (bytestring b) = bytestring b
 subTermCon σ⋆ (string s)     = string s
 subTermCon σ⋆ (bool b)       = bool b
 subTermCon σ⋆ unit           = unit
-subTermCon σ⋆ (Data d)       = Data d
+subTermCon σ⋆ (pdata d)       = pdata d
 \end{code}
 
 \begin{code}
