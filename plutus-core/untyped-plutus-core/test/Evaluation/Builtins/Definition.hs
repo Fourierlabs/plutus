@@ -13,7 +13,7 @@ module Evaluation.Builtins.Definition
     ( test_definition
     ) where
 
-import PlutusCore
+import PlutusCore hiding (Constr)
 import PlutusCore.Builtin
 import PlutusCore.Compiler.Erase (eraseTerm)
 import PlutusCore.Data
@@ -22,7 +22,9 @@ import PlutusCore.Evaluation.Machine.ExBudgetingDefaults
 import PlutusCore.Evaluation.Machine.MachineParameters
 import PlutusCore.Generators.Hedgehog.Interesting
 import PlutusCore.MkPlc hiding (error)
+import PlutusCore.Pretty
 import PlutusPrelude
+import UntypedPlutusCore.Evaluation.Machine.Cek
 
 import PlutusCore.Examples.Builtins
 import PlutusCore.Examples.Data.Data
@@ -36,12 +38,15 @@ import PlutusCore.StdLib.Data.ScottList qualified as Scott
 import PlutusCore.StdLib.Data.ScottUnit qualified as Scott
 import PlutusCore.StdLib.Data.Unit
 
+import Evaluation.Builtins.BLS12_381 (test_BLS12_381)
 import Evaluation.Builtins.Common
 import Evaluation.Builtins.SignatureVerification (ecdsaSecp256k1Prop, ed25519_V1Prop,
                                                   ed25519_V2Prop, schnorrSecp256k1Prop)
 
+
 import Control.Exception
 import Data.ByteString (ByteString)
+import Data.DList qualified as DList
 import Data.Proxy
 import Data.Text (Text)
 import Hedgehog hiding (Opaque, Size, Var)
@@ -310,7 +315,7 @@ test_SwapEls =
             res = mkConstant @Integer @DefaultUni () $
                     foldr (\p r -> r + (if snd p then -1 else 1) * fst p) 0 xs
             el = mkTyBuiltin @_ @(Integer, Bool) ()
-            instProj proj = mkIterInst () (builtin () proj) [integer, bool]
+            instProj p = mkIterInst () (builtin () p) [integer, bool]
             fun = runQuote $ do
                     p <- freshName "p"
                     r <- freshName "r"
@@ -353,6 +358,60 @@ test_IdBuiltinData =
                 , dTerm
                 ]
         typecheckEvaluateCekNoEmit def defaultBuiltinCostModelExt term @?= Right (EvaluationSuccess dTerm)
+
+-- | For testing how an evaluator instantiated at a particular 'ExBudgetMode' handles the
+-- 'TrackCosts' builtin.
+test_TrackCostsWith
+    :: String -> Int -> (Term TyName Name DefaultUni ExtensionFun () -> IO ()) -> TestTree
+test_TrackCostsWith cat len checkTerm =
+    testCase ("TrackCosts: " ++ cat) $ do
+        let term
+                = apply () (builtin () TrackCosts)
+                $ mkConstant @Data () (List . replicate len $ I 42)
+        checkTerm term
+
+-- | Test that individual budgets are picked up by GC while spending is still ongoing.
+test_TrackCostsRestricting :: TestTree
+test_TrackCostsRestricting =
+    let n = 30000
+    in test_TrackCostsWith "restricting" n $ \term ->
+        case typecheckReadKnownCek def () term of
+            Left err                         -> fail $ displayPlcDef err
+            Right (Left err)                 -> fail $ displayPlcDef err
+            Right (Right (res :: [Integer])) -> do
+                let expected = n `div` 10
+                    actual = length res
+                    err = concat
+                        [ "Too few elements picked up by GC\n"
+                        , "Expected at least: " ++ show expected ++ "\n"
+                        , "But got: " ++ show actual
+                        ]
+                assertBool err $ expected < actual
+
+test_TrackCostsRetaining :: TestTree
+test_TrackCostsRetaining =
+    test_TrackCostsWith "retaining" 10000 $ \term -> do
+        let -- An 'ExBudgetMode' that retains all the individual budgets by sticking them into a
+            -- 'DList'.
+            retaining = monoidalBudgeting $ const DList.singleton
+            typecheckAndRunRetainer = typecheckAnd def $ \params term' ->
+                let (getRes, budgets) = runCekNoEmit params retaining term'
+                in (getRes >>= readKnownSelf, budgets)
+        case typecheckAndRunRetainer () term of
+            Left err                                  -> fail $ displayPlcDef err
+            Right (Left err, _)                       -> fail $ displayPlcDef err
+            Right (Right (res :: [Integer]), budgets) -> do
+                -- @length budgets@ is for retaining @budgets@ for as long as possible just in case.
+                -- @3@ is just for giving us room to handle erratic GC behavior. It really should be
+                -- @1@.
+                let expected = min 3 (length budgets)
+                    actual = length res
+                    err = concat
+                        [ "Too many elements picked up by GC\n"
+                        , "Expected at most: " ++ show expected ++ "\n"
+                        , "But got: " ++ show actual
+                        ]
+                assertBool err $ expected > actual
 
 -- | Test all integer related builtins
 test_Integer :: TestTree
@@ -624,22 +683,34 @@ fails b args =
         typecheckEvaluateCekNoEmit def defaultBuiltinCostModel actualExp
 
 -- Test that the SECP256k1 builtins are behaving correctly
--- Test that the SECP256k1 builtins are behaving correctly
 test_SignatureVerification :: TestTree
 test_SignatureVerification =
   adjustOption (\x -> max x . HedgehogTestLimit . Just $ 8000) .
   testGroup "Signature verification" $ [
-                 testGroup "Ed25519 signatures (V1)" $ [
-                                testPropertyNamed "Ed25519_V1 verification behaves correctly on all inputs" "ed25519_V1_correct" . property $ ed25519_V1Prop
-                               ],
-                 testGroup "Ed25519 signatures (V2)" $ [
-                                testPropertyNamed "Ed25519_V2 verification behaves correctly on all inputs" "ed25519_V2_correct" . property $ ed25519_V2Prop
-                               ],
-                 testGroup "Signatures on the SECP256k1 curve" $ [
-                                testPropertyNamed "ECDSA verification behaves correctly on all inputs" "ecdsa_correct" . property $ ecdsaSecp256k1Prop,
-                                testPropertyNamed "Schnorr verification behaves correctly on all inputs" "schnorr_correct" . property $ schnorrSecp256k1Prop
-                               ]
+        testGroup "Ed25519 signatures (V1)"
+                      [ testPropertyNamed
+                        "Ed25519_V1 verification behaves correctly on all inputs"
+                        "ed25519_V1_correct" .
+                        property $ ed25519_V1Prop
+                      ],
+        testGroup "Ed25519 signatures (V2)"
+                      [ testPropertyNamed
+                        "Ed25519_V2 verification behaves correctly on all inputs"
+                        "ed25519_V2_correct"
+                        . property $ ed25519_V2Prop
+                      ],
+        testGroup "Signatures on the SECP256k1 curve"
+                      [ testPropertyNamed
+                        "ECDSA verification behaves correctly on all inputs"
+                        "ecdsa_correct"
+                        . property $ ecdsaSecp256k1Prop
+                      , testPropertyNamed
+                            "Schnorr verification behaves correctly on all inputs"
+                            "schnorr_correct"
+                            . property $ schnorrSecp256k1Prop
+                      ]
                 ]
+
 test_definition :: TestTree
 test_definition =
     testGroup "definition"
@@ -660,12 +731,15 @@ test_definition =
         , test_BuiltinPair
         , test_SwapEls
         , test_IdBuiltinData
+        , test_TrackCostsRestricting
+        , test_TrackCostsRetaining
         , test_Integer
         , test_String
         , test_List
         , test_Data
         , test_Crypto
         , test_SignatureVerification
+        , test_BLS12_381
         , test_Other
         , test_Version
         , test_ConsByteString

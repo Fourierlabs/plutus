@@ -58,6 +58,9 @@ extricateTyConNf⋆ T.bool = S.bool
 extricateTyConNf⋆ (T.list A) = S.list (extricateNf⋆ A)
 extricateTyConNf⋆ (T.pair A B) = S.pair (extricateNf⋆ A) (extricateNf⋆ B) 
 extricateTyConNf⋆ T.pdata = S.pdata
+extricateTyConNf⋆ T.bls12-381-g1-element = S.bls12-381-g1-element
+extricateTyConNf⋆ T.bls12-381-g2-element = S.bls12-381-g2-element
+extricateTyConNf⋆ T.bls12-381-mlresult = S.bls12-381-mlresult
 
 extricateNf⋆ (Π {K = K} A) = Π K (extricateNf⋆ A)
 extricateNf⋆ (A ⇒ B) = extricateNf⋆ A ⇒ extricateNf⋆ B
@@ -91,6 +94,9 @@ extricateC (string s)     = string s
 extricateC (bool b)       = bool b
 extricateC unit           = unit
 extricateC (pdata d)      = pdata d
+extricateC (bls12-381-g1-element e)      = bls12-381-g1-element e
+extricateC (bls12-381-g2-element e)      = bls12-381-g2-element e
+extricateC (bls12-381-mlresult r)   = bls12-381-mlresult r
 
 extricateSub : ∀ {Γ Δ} → (∀ {J} → Δ ∋⋆ J → Γ ⊢Nf⋆ J)
   → Scoped.Tel⋆ (len⋆ Γ) (len⋆ Δ)

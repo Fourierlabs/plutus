@@ -79,7 +79,10 @@ nfTypeTC (STermCon.bytestring b) = NTermCon.bytestring b
 nfTypeTC (STermCon.string s)     = NTermCon.string s
 nfTypeTC (STermCon.bool b)       = NTermCon.bool b
 nfTypeTC STermCon.unit           = NTermCon.unit
-nfTypeTC (STermCon.pdata d)       = NTermCon.pdata d
+nfTypeTC (STermCon.pdata d)      = NTermCon.pdata d
+nfTypeTC (STermCon.bls12-381-g1-element e) = NTermCon.bls12-381-g1-element e
+nfTypeTC (STermCon.bls12-381-g2-element e) = NTermCon.bls12-381-g2-element e
+nfTypeTC (STermCon.bls12-381-mlresult r)   = NTermCon.bls12-381-mlresult r
 
 lemσ : ∀{Γ Δ Δ'}
   → (σ : Sub Δ Γ)

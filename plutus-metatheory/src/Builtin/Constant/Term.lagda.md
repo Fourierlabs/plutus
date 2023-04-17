@@ -37,5 +37,9 @@ data TermCon {Φ} : Φ ⊢⋆ * → Set where
       (b : Bool)
     → TermCon (con bool)
   unit       : TermCon (con unit)
-  pdata       : DATA → TermCon (con pdata)  
+  pdata      : DATA → TermCon (con pdata)
+  bls12-381-g1-element : Bls12-381-G1-Element → TermCon (con bls12-381-g1-element)
+  bls12-381-g2-element : Bls12-381-G2-Element → TermCon (con bls12-381-g2-element)
+  bls12-381-mlresult   : Bls12-381-MlResult   → TermCon (con bls12-381-mlresult)
+  
 ```

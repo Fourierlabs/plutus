@@ -68,7 +68,10 @@ renTermCon ρ⋆ (bytestring b) = bytestring b
 renTermCon ρ⋆ (string s)     = string s
 renTermCon ρ⋆ (bool b)       = bool b
 renTermCon ρ⋆ unit           = unit
-renTermCon ρ⋆ (pdata d)       = pdata d
+renTermCon ρ⋆ (pdata d)      = pdata d
+renTermCon ρ⋆ (bls12-381-g1-element e) = bls12-381-g1-element e
+renTermCon ρ⋆ (bls12-381-g2-element e) = bls12-381-g2-element e
+renTermCon ρ⋆ (bls12-381-mlresult r)   = bls12-381-mlresult r
 \end{code}
 
 \begin{code}
@@ -156,7 +159,10 @@ subTermCon σ⋆ (bytestring b) = bytestring b
 subTermCon σ⋆ (string s)     = string s
 subTermCon σ⋆ (bool b)       = bool b
 subTermCon σ⋆ unit           = unit
-subTermCon σ⋆ (pdata d)       = pdata d
+subTermCon σ⋆ (pdata d)      = pdata d
+subTermCon σ⋆ (bls12-381-g1-element e) = bls12-381-g1-element e
+subTermCon σ⋆ (bls12-381-g2-element e) = bls12-381-g2-element e
+subTermCon σ⋆ (bls12-381-mlresult r)   = bls12-381-mlresult r
 \end{code}
 
 \begin{code}

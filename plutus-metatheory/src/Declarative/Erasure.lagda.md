@@ -57,6 +57,9 @@ eraseTC (string s)     = string s
 eraseTC (bool b)       = bool b 
 eraseTC unit           = unit
 eraseTC (pdata d)       = pdata d
+eraseTC (bls12-381-g1-element e) = bls12-381-g1-element e
+eraseTC (bls12-381-g2-element e) = bls12-381-g2-element e
+eraseTC (bls12-381-mlresult r)   = bls12-381-mlresult r
 
 
 

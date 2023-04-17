@@ -8,8 +8,13 @@
 
 module CreateBuiltinCostModel where
 
+import PlutusCore.Crypto.BLS12_381.G1 qualified as G1
+import PlutusCore.Crypto.BLS12_381.G2 qualified as G2
+import PlutusCore.Crypto.BLS12_381.Pairing qualified as Pairing
 import PlutusCore.Evaluation.Machine.BuiltinCostModel
+import PlutusCore.Evaluation.Machine.CostStream
 import PlutusCore.Evaluation.Machine.ExMemory
+import PlutusCore.Evaluation.Machine.ExMemoryUsage
 
 import Barbies (bmap, bsequence)
 import Control.Applicative (Const (Const, getConst))
@@ -21,6 +26,7 @@ import Data.Coerce (coerce)
 import Data.Csv (FromNamedRecord, FromRecord, HasHeader (HasHeader), decode, parseNamedRecord, (.:))
 import Data.Either.Extra (maybeToEither)
 import Data.Functor.Compose (Compose (Compose))
+import Data.SatInt
 import Data.Text (Text)
 import Data.Text.Encoding qualified as T (encodeUtf8)
 import Data.Vector (Vector, find)
@@ -33,7 +39,7 @@ import Language.R.QQ (r)
 -- | Convert microseconds represented as a float to picoseconds represented as a
 -- CostingInteger.  We round up to be sure we don't underestimate anything.
 microToPico :: Double -> CostingInteger
-microToPico = ceiling . (1e6 *)
+microToPico = unsafeToSatInt . ceiling . (1e6 *)
 
 {- See CostModelGeneration.md for a description of what this does. -}
 
@@ -98,6 +104,23 @@ builtinCostModelNames = BuiltinCostModelBase
   , paramMkNilData                       = "mkNilDataModel"
   , paramMkNilPairData                   = "mkNilPairDataModel"
   , paramSerialiseData                   = "serialiseDataModel"
+  , paramBls12_381_G1_add                = "bls12_381_G1_addModel"
+  , paramBls12_381_G1_neg                = "bls12_381_G1_negModel"
+  , paramBls12_381_G1_scalarMul          = "bls12_381_G1_scalarMulModel"
+  , paramBls12_381_G1_equal              = "bls12_381_G1_equalModel"
+  , paramBls12_381_G1_compress           = "bls12_381_G1_compressModel"
+  , paramBls12_381_G1_uncompress         = "bls12_381_G1_uncompressModel"
+  , paramBls12_381_G1_hashToGroup        = "bls12_381_G1_hashToGroupModel"
+  , paramBls12_381_G2_add                = "bls12_381_G2_addModel"
+  , paramBls12_381_G2_neg                = "bls12_381_G2_negModel"
+  , paramBls12_381_G2_scalarMul          = "bls12_381_G2_scalarMulModel"
+  , paramBls12_381_G2_equal              = "bls12_381_G2_equalModel"
+  , paramBls12_381_G2_compress           = "bls12_381_G2_compressModel"
+  , paramBls12_381_G2_uncompress         = "bls12_381_G2_uncompressModel"
+  , paramBls12_381_G2_hashToGroup        = "bls12_381_G2_hashToGroupModel"
+  , paramBls12_381_millerLoop            = "bls12_381_millerLoopModel"
+  , paramBls12_381_mulMlResult           = "bls12_381_mulMlResultModel"
+  , paramBls12_381_finalVerify           = "bls12_381_finalVerifyModel"
   }
 
 
@@ -190,6 +213,24 @@ createBuiltinCostModel bmfile rfile = do
     paramMkPairData                      <- getParams mkPairData     paramMkPairData
     paramMkNilData                       <- getParams mkNilData      paramMkNilData
     paramMkNilPairData                   <- getParams mkNilPairData  paramMkNilPairData
+
+    paramBls12_381_G1_add            <- getParams bls12_381_G1_add         paramBls12_381_G1_add
+    paramBls12_381_G1_neg            <- getParams bls12_381_G1_neg         paramBls12_381_G1_neg
+    paramBls12_381_G1_scalarMul      <- getParams bls12_381_G1_scalarMul   paramBls12_381_G1_scalarMul
+    paramBls12_381_G1_equal          <- getParams bls12_381_G1_equal       paramBls12_381_G1_equal
+    paramBls12_381_G1_compress       <- getParams bls12_381_G1_compress    paramBls12_381_G1_compress
+    paramBls12_381_G1_uncompress     <- getParams bls12_381_G1_uncompress  paramBls12_381_G1_uncompress
+    paramBls12_381_G1_hashToGroup    <- getParams bls12_381_G1_hashToGroup paramBls12_381_G1_hashToGroup
+    paramBls12_381_G2_add            <- getParams bls12_381_G2_add         paramBls12_381_G2_add
+    paramBls12_381_G2_neg            <- getParams bls12_381_G2_neg         paramBls12_381_G2_neg
+    paramBls12_381_G2_scalarMul      <- getParams bls12_381_G2_scalarMul   paramBls12_381_G2_scalarMul
+    paramBls12_381_G2_equal          <- getParams bls12_381_G2_equal       paramBls12_381_G2_equal
+    paramBls12_381_G2_compress       <- getParams bls12_381_G2_compress    paramBls12_381_G2_compress
+    paramBls12_381_G2_uncompress     <- getParams bls12_381_G2_uncompress  paramBls12_381_G2_uncompress
+    paramBls12_381_G2_hashToGroup    <- getParams bls12_381_G2_hashToGroup paramBls12_381_G2_hashToGroup
+    paramBls12_381_millerLoop        <- getParams bls12_381_millerLoop     paramBls12_381_millerLoop
+    paramBls12_381_mulMlResult       <- getParams bls12_381_mulMlResult    paramBls12_381_mulMlResult
+    paramBls12_381_finalVerify       <- getParams bls12_381_finalVerify    paramBls12_381_finalVerify
 
     pure $ BuiltinCostModelBase {..}
 
@@ -287,9 +328,8 @@ readModelLinearOnDiagonal model c = do
 boolMemModel :: ModelTwoArguments
 boolMemModel = ModelTwoArgumentsConstantCost 1
 
-
 memoryUsageAsCostingInteger :: ExMemoryUsage a => a -> CostingInteger
-memoryUsageAsCostingInteger x = coerce $ memoryUsage x
+memoryUsageAsCostingInteger = coerce . sumCostStream . flattenCostRose . memoryUsage
 
 
 ---------------- Integers ----------------
@@ -300,7 +340,7 @@ addInteger cpuModelR = do
   -- The worst case is adding e.g. `maxBound :: Int` + `maxBound :: Int`, which increases the memory usage by one.
   -- (max x y) + 1
   let memModel = ModelTwoArgumentsMaxSize $ ModelMaxSize 1 1
-  pure $ CostingFun (cpuModel) memModel
+  pure $ CostingFun cpuModel memModel
 
 subtractInteger :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelTwoArguments)
 subtractInteger cpuModelR = do
@@ -728,3 +768,141 @@ mkNilPairData cpuModelR = do
   let memModel = ModelOneArgumentConstantCost 32
   pure $ CostingFun cpuModel memModel
 -- () -> [] :: [(Data,Data)]
+
+
+---------------- BLS12_381 operations ----------------
+
+toMemSize :: Int -> CostingInteger
+toMemSize n = fromIntegral $ n `div` 8
+
+-- Group order is 255 bits -> 32 bytes (4 words).
+-- Field size is 381 bits  -> 48 bytes (6 words)
+-- (with three spare bits used for encoding purposes).
+
+-- Sizes below from sizePoint, compressedSizePoint, and sizePT in
+-- Crypto.EllipticCurve.BLS12_381.Internal
+
+-- In-memory G1 points take up 144 bytes (18 words).
+-- These are projective points, so we have *three* 48-byte coordinates.
+g1MemSize :: CostingInteger
+g1MemSize = toMemSize G1.memSizeBytes
+
+-- Compressed serialised G1 points take up 48 bytes (6 words)
+g1CompressedSize :: CostingInteger
+g1CompressedSize = toMemSize G1.compressedSizeBytes
+
+-- In-memory G2 points take up 288 bytes (36 words)
+g2MemSize :: CostingInteger
+g2MemSize = toMemSize G2.memSizeBytes
+
+-- Compressed serialised G2 points take up 96 bytes (12 words)
+g2CompressedSize :: CostingInteger
+g2CompressedSize = toMemSize G2.compressedSizeBytes
+
+-- In-memory G2 points take up 576 bytes (72 words)
+mlResultMemSize :: CostingInteger
+mlResultMemSize = toMemSize Pairing.mlResultMemSizeBytes
+
+bls12_381_G1_add :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelTwoArguments)
+bls12_381_G1_add cpuModelR = do
+  cpuModel <- ModelTwoArgumentsConstantCost <$> readModelConstantCost cpuModelR
+  let memModel = ModelTwoArgumentsConstantCost g1MemSize
+  pure $ CostingFun cpuModel memModel
+
+bls12_381_G1_neg :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelOneArgument)
+bls12_381_G1_neg cpuModelR = do
+  cpuModel <- ModelOneArgumentConstantCost <$> readModelConstantCost cpuModelR
+  let memModel = ModelOneArgumentConstantCost g1MemSize
+  pure $ CostingFun cpuModel memModel
+
+bls12_381_G1_scalarMul ::  MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelTwoArguments)
+bls12_381_G1_scalarMul cpuModelR = do
+  cpuModel <- ModelTwoArgumentsLinearInX <$> readModelLinearInX cpuModelR
+  let memModel = ModelTwoArgumentsConstantCost g1MemSize
+  pure $ CostingFun cpuModel memModel
+
+bls12_381_G1_equal :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelTwoArguments)
+bls12_381_G1_equal cpuModelR = do
+    cpuModel <- ModelTwoArgumentsConstantCost <$> readModelConstantCost cpuModelR
+    let memModel = boolMemModel
+    pure $ CostingFun cpuModel memModel
+
+bls12_381_G1_hashToGroup :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelOneArgument)
+bls12_381_G1_hashToGroup cpuModelR = do
+    cpuModel <- ModelOneArgumentLinearCost <$> readModelLinearInX cpuModelR
+    let memModel = ModelOneArgumentConstantCost g1MemSize
+    pure $ CostingFun cpuModel memModel
+
+bls12_381_G1_compress :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelOneArgument)
+bls12_381_G1_compress cpuModelR = do
+  cpuModel <- ModelOneArgumentConstantCost <$> readModelConstantCost cpuModelR
+  let memModel = ModelOneArgumentConstantCost g1CompressedSize
+  pure $ CostingFun cpuModel memModel
+
+bls12_381_G1_uncompress :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelOneArgument)
+bls12_381_G1_uncompress cpuModelR = do
+  cpuModel <- ModelOneArgumentConstantCost <$> readModelConstantCost cpuModelR
+  let memModel = ModelOneArgumentConstantCost g1MemSize
+  pure $ CostingFun cpuModel memModel
+
+bls12_381_G2_add :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelTwoArguments)
+bls12_381_G2_add cpuModelR = do
+  cpuModel <- ModelTwoArgumentsConstantCost <$> readModelConstantCost cpuModelR
+  let memModel = ModelTwoArgumentsConstantCost g2MemSize
+  pure $ CostingFun cpuModel memModel
+
+bls12_381_G2_neg :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelOneArgument)
+bls12_381_G2_neg cpuModelR = do
+  cpuModel <- ModelOneArgumentConstantCost <$> readModelConstantCost cpuModelR
+  let memModel = ModelOneArgumentConstantCost g2MemSize
+  pure $ CostingFun cpuModel memModel
+
+bls12_381_G2_scalarMul ::  MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelTwoArguments)
+bls12_381_G2_scalarMul cpuModelR = do
+  cpuModel <- ModelTwoArgumentsLinearInX <$> readModelLinearInX cpuModelR
+  let memModel = ModelTwoArgumentsConstantCost g2MemSize
+  pure $ CostingFun cpuModel memModel
+
+bls12_381_G2_equal :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelTwoArguments)
+bls12_381_G2_equal cpuModelR = do
+    cpuModel <- ModelTwoArgumentsConstantCost <$> readModelConstantCost cpuModelR
+    let memModel = boolMemModel
+    pure $ CostingFun cpuModel memModel
+
+bls12_381_G2_hashToGroup :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelOneArgument)
+bls12_381_G2_hashToGroup cpuModelR = do
+    cpuModel <- ModelOneArgumentLinearCost <$> readModelLinearInX cpuModelR
+    let memModel = ModelOneArgumentConstantCost g2MemSize
+    pure $ CostingFun cpuModel memModel
+
+bls12_381_G2_compress :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelOneArgument)
+bls12_381_G2_compress cpuModelR = do
+  cpuModel <- ModelOneArgumentConstantCost <$> readModelConstantCost cpuModelR
+  let memModel = ModelOneArgumentConstantCost g2CompressedSize
+  pure $ CostingFun cpuModel memModel
+
+bls12_381_G2_uncompress :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelOneArgument)
+bls12_381_G2_uncompress cpuModelR = do
+  cpuModel <- ModelOneArgumentConstantCost <$> readModelConstantCost cpuModelR
+  let memModel = ModelOneArgumentConstantCost g2MemSize
+  pure $ CostingFun cpuModel memModel
+
+bls12_381_millerLoop :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelTwoArguments)
+bls12_381_millerLoop cpuModelR = do
+    cpuModel <- ModelTwoArgumentsConstantCost <$> readModelConstantCost cpuModelR
+    let memModel = ModelTwoArgumentsConstantCost mlResultMemSize
+    pure $ CostingFun cpuModel memModel
+
+bls12_381_mulMlResult :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelTwoArguments)
+bls12_381_mulMlResult cpuModelR = do
+    cpuModel <- ModelTwoArgumentsConstantCost <$> readModelConstantCost cpuModelR
+    let memModel = ModelTwoArgumentsConstantCost mlResultMemSize
+    pure $ CostingFun cpuModel memModel
+
+bls12_381_finalVerify :: MonadR m => (SomeSEXP (Region m)) -> m (CostingFun ModelTwoArguments)
+bls12_381_finalVerify cpuModelR= do
+    cpuModel <- ModelTwoArgumentsConstantCost <$> readModelConstantCost cpuModelR
+    let memModel = boolMemModel
+    pure $ CostingFun cpuModel memModel
+
+

@@ -31,7 +31,7 @@ data Maybe (A : Set) : Set where
 
 {-# COMPILE GHC Maybe = data Maybe (Just | Nothing) #-}
 
-maybe : {A B : Set} → (A → B) → B → Maybe A → B 
+maybe : {A B : Set} → (A → B) → B → Maybe A → B
 maybe f b (just a) = f a
 maybe f b nothing  = b
 
@@ -122,7 +122,7 @@ record Monad (F : Set → Set) : Set₁ where
   field
     return : ∀{A} → A → F A
     _>>=_   : ∀{A B} → F A → (A → F B) → F B
-    
+
   _>>_ : ∀{A B} → F A → F B → F B
   as >> bs = as >>= const bs
 
@@ -174,6 +174,19 @@ data DATA : Set where
 
 {-# FOREIGN GHC import PlutusCore.Data #-}
 {-# COMPILE GHC DATA = data Data (I | B)   #-}
+
+postulate Bls12-381-G1-Element : Set
+{-# FOREIGN GHC import qualified PlutusCore.Crypto.BLS12_381.G1 as G1 #-}
+{-# COMPILE GHC Bls12-381-G1-Element = type G1.Element #-}
+
+postulate Bls12-381-G2-Element : Set
+{-# FOREIGN GHC import qualified PlutusCore.Crypto.BLS12_381.G2 as G2 #-}
+{-# COMPILE GHC Bls12-381-G2-Element = type G2.Element #-}
+
+postulate Bls12-381-MlResult : Set
+{-# FOREIGN GHC import qualified PlutusCore.Crypto.BLS12_381.Pairing as Pairing #-}
+{-# COMPILE GHC Bls12-381-MlResult = type Pairing.MlResult #-}
+
 \end{code}
 
 Kinds
@@ -207,12 +220,15 @@ typed syntax.
 
 \begin{code}
 data TermCon : Set where
-  integer    : ℤ → TermCon
-  bytestring : ByteString → TermCon
-  string     : String → TermCon
-  bool       : Bool → TermCon
-  unit       : TermCon
-  pdata       : DATA → TermCon
+ integer              : ℤ → TermCon
+ bytestring           : ByteString → TermCon
+ string               : String → TermCon
+ bool                 : Bool → TermCon
+ unit                 : TermCon
+ pdata                : DATA → TermCon
+ bls12-381-g1-element : Bls12-381-G1-Element → TermCon
+ bls12-381-g2-element : Bls12-381-G2-Element → TermCon
+ bls12-381-mlresult   : Bls12-381-MlResult → TermCon
 
 {-# FOREIGN GHC type TermCon = Some (ValueOf DefaultUni)               #-}
 {-# FOREIGN GHC pattern TmInteger    i = Some (ValueOf DefaultUniInteger i) #-}
@@ -221,5 +237,8 @@ data TermCon : Set where
 {-# FOREIGN GHC pattern TmUnit         = Some (ValueOf DefaultUniUnit ()) #-}
 {-# FOREIGN GHC pattern TmBool       b = Some (ValueOf DefaultUniBool b) #-}
 {-# FOREIGN GHC pattern TmData       d = Some (ValueOf DefaultUniData d) #-}
-{-# COMPILE GHC TermCon = data TermCon (TmInteger | TmByteString | TmString | TmBool | TmUnit | TmData) #-}
+{-# FOREIGN GHC pattern TmG1Elt      e = Some (ValueOf DefaultUniBLS12_381_G1_Element e) #-}
+{-# FOREIGN GHC pattern TmG2Elt      e = Some (ValueOf DefaultUniBLS12_381_G2_Element e) #-}
+{-# FOREIGN GHC pattern TmMlResult   r = Some (ValueOf DefaultUniBLS12_381_MlResult r) #-}
+{-# COMPILE GHC TermCon = data TermCon (TmInteger | TmByteString | TmString | TmBool | TmUnit | TmData | TmG1Elt | TmG2Elt | TmMlResult) #-}
 \end{code}

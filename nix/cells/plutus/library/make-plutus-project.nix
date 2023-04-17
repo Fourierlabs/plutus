@@ -32,7 +32,10 @@ let
 
     inputMap = { "https://input-output-hk.github.io/cardano-haskell-packages" = inputs.CHaP; };
     # No source-repository-packages right now
-    sha256map = { };
+    sha256map = {
+      "https://github.com/input-output-hk/cardano-base"."56a71b150b7ff7fb6d6bf588f3e9d88822c9048c" =
+        "sha256-mTRYnpjNATU8W9th9KTNDairJDnFiq12E58t6evHMD8";
+    };
 
     # TODO: move this into the cabal.project using the new conditional support?
     # Configuration settings needed for cabal configure to work when cross compiling
@@ -156,6 +159,7 @@ let
           cardano-crypto-class.components.library.pkgconfig = lib.mkForce [
             [ pkgs.libsodium-vrf pkgs.secp256k1 ]
           ];
+          cardano-crypto-class.components.library.libs = lib.mkForce [ pkgs.blst ];
         };
       })
 

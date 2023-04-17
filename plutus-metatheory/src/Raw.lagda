@@ -40,16 +40,20 @@ data RawTy where
 {-# FOREIGN GHC import Raw #-}
 
 data RawTyCon where
-  integer    : RawTyCon
-  bytestring : RawTyCon
-  string     : RawTyCon
-  unit       : RawTyCon
-  bool       : RawTyCon
-  list       : RawTy → RawTyCon
-  pair       : RawTy → RawTy → RawTyCon
-  pdata       : RawTyCon
+  integer              : RawTyCon
+  bytestring           : RawTyCon
+  string               : RawTyCon
+  unit                 : RawTyCon
+  bool                 : RawTyCon
+  list                 : RawTy → RawTyCon
+  pair                 : RawTy → RawTy → RawTyCon
+  pdata                : RawTyCon
+  bls12-381-g1-element : RawTyCon
+  bls12-381-g2-element : RawTyCon
+  bls12-381-mlresult   : RawTyCon
 
-{-# COMPILE GHC RawTyCon = data RTyCon (RTyConInt | RTyConBS | RTyConStr | RTyConUnit | RTyConBool | RTyConList | RTyConPair | RTyConData) #-}
+
+{-# COMPILE GHC RawTyCon = data RTyCon (RTyConInt | RTyConBS | RTyConStr | RTyConUnit | RTyConBool | RTyConList | RTyConPair | RTyConData | RTyConG1elt | RTyConG2elt | RTyConMlResult) #-}
 
 data RawTm : Set where
   `             : ℕ → RawTm
@@ -76,6 +80,9 @@ decRTyCon bytestring bytestring = true
 decRTyCon string     string     = true
 decRTyCon unit       unit       = true
 decRTyCon bool       bool       = true
+decRTyCon bls12-381-g1-element bls12-381-g1-element = true
+decRTyCon bls12-381-g2-element bls12-381-g2-element = true
+decRTyCon bls12-381-mlresult   bls12-381-mlresult   = true  -- Maybe not: no eq for bls12-381-mlresult in Plutus
 decRTyCon _          _          = false
 
 decTermCon : (C C' : TermCon) → Bool
@@ -92,6 +99,7 @@ decTermCon (bool b) (bool b') with b Data.Bool.≟ b'
 ... | yes p = true
 ... | no ¬p = false
 decTermCon unit unit = true
+-- FIXME: not sure what to do about the BLS types here.
 decTermCon _ _ = false
 
 decBuiltin : (b b' : Builtin) → Bool
@@ -114,6 +122,23 @@ decBuiltin verifySchnorrSecp256k1Signature verifySchnorrSecp256k1Signature = tru
 decBuiltin equalsByteString equalsByteString = true
 decBuiltin appendString appendString = true
 decBuiltin trace trace = true
+decBuiltin bls12-381-G1-add bls12-381-G1-add = true
+decBuiltin bls12-381-G1-neg bls12-381-G1-neg = true
+decBuiltin bls12-381-G1-scalarMul bls12-381-G1-scalarMul = true
+decBuiltin bls12-381-G1-equal bls12-381-G1-equal = true
+decBuiltin bls12-381-G1-hashToGroup bls12-381-G1-hashToGroup = true
+decBuiltin bls12-381-G1-compress bls12-381-G1-compress = true
+decBuiltin bls12-381-G1-uncompress bls12-381-G1-uncompress = true
+decBuiltin bls12-381-G2-add bls12-381-G2-add = true
+decBuiltin bls12-381-G2-neg bls12-381-G2-neg = true
+decBuiltin bls12-381-G2-scalarMul bls12-381-G2-scalarMul = true
+decBuiltin bls12-381-G2-equal bls12-381-G2-equal = true
+decBuiltin bls12-381-G2-hashToGroup bls12-381-G2-hashToGroup = true
+decBuiltin bls12-381-G2-compress bls12-381-G2-compress = true
+decBuiltin bls12-381-G2-uncompress bls12-381-G2-uncompress = true
+decBuiltin bls12-381-millerLoop bls12-381-millerLoop = true
+decBuiltin bls12-381-mulMlResult bls12-381-mulMlResult = true
+decBuiltin bls12-381-finalVerify bls12-381-finalVerify = true
 decBuiltin _ _ = false
 
 decRKi : (K K' : Kind) → Bool

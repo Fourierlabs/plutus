@@ -102,11 +102,14 @@ data TypeError term uni fun ann
 -- on @ParseErrorBundle@.
 data ParserErrorBundle
     = ParseErrorB !(ParseErrorBundle T.Text ParserError)
-    deriving stock (Show, Eq, Generic)
+    deriving stock (Eq, Generic)
     deriving anyclass (NFData)
 
 instance Pretty ParserErrorBundle where
     pretty (ParseErrorB err) = pretty $ errorBundlePretty err
+
+instance Show ParserErrorBundle where
+    show (ParseErrorB peb) = errorBundlePretty peb
 
 data Error uni fun ann
     = ParseErrorE !ParserErrorBundle
@@ -130,8 +133,8 @@ instance Pretty ParserError where
         "Expected a type of kind star (to later parse a constant), but got:" <+>
             squotes (pretty ty) <+> "at" <+> pretty loc
     pretty (UnknownBuiltinFunction s loc lBuiltin)   =
-        "Unknown built-in function" <+> squotes (pretty s) <+> "at" <+> pretty loc <+>
-            ". Parsable functions are " <+> pretty lBuiltin
+        "Unknown built-in function" <+> squotes (pretty s) <+> "at" <+> pretty loc <>
+            "." <> hardline <> "Parsable functions are " <+> pretty lBuiltin
     pretty (InvalidBuiltinConstant c s loc) =
         "Invalid constant" <+> squotes (pretty c) <+> "of type" <+> squotes (pretty s) <+> "at" <+>
             pretty loc

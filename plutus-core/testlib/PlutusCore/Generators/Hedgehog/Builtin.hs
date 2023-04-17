@@ -17,10 +17,16 @@ module PlutusCore.Generators.Hedgehog.Builtin (
     genList,
     genMap,
     genConstr,
+    genBls12_381_G1_Element,
+    genBls12_381_G2_Element,
+    genBls12_381_MlResult
 ) where
 
-import PlutusCore
+import PlutusCore hiding (Constr)
 import PlutusCore.Builtin
+import PlutusCore.Crypto.BLS12_381.G1 qualified as BLS12_381.G1
+import PlutusCore.Crypto.BLS12_381.G2 qualified as BLS12_381.G2
+import PlutusCore.Crypto.BLS12_381.Pairing qualified as BLS12_381.Pairing
 import PlutusCore.Data (Data (..))
 import PlutusCore.Generators.Hedgehog.AST hiding (genConstant)
 
@@ -77,6 +83,12 @@ genConstant tr
     | Just HRefl <- eqTypeRep tr (typeRep @BS.ByteString) = SomeGen genByteString
     | Just HRefl <- eqTypeRep tr (typeRep @Text) = SomeGen genText
     | Just HRefl <- eqTypeRep tr (typeRep @Data) = SomeGen $ genData 5
+    | Just HRefl <- eqTypeRep tr (typeRep @BLS12_381.G1.Element) =
+                    SomeGen $ genBls12_381_G1_Element
+    | Just HRefl <- eqTypeRep tr (typeRep @BLS12_381.G2.Element) =
+                    SomeGen $ genBls12_381_G2_Element
+    | Just HRefl <- eqTypeRep tr (typeRep @BLS12_381.Pairing.MlResult) =
+                    SomeGen $ genBls12_381_MlResult
     | trPair `App` tr1 `App` tr2 <- tr
     , Just HRefl <- eqTypeRep trPair (typeRep @(,)) =
         case (genConstant tr1, genConstant tr2) of
@@ -145,3 +157,15 @@ genConstr depth =
         <*> Gen.list
             (Range.linear 0 5)
             (genData (depth - 1))
+
+genBls12_381_G1_Element :: Gen BLS12_381.G1.Element
+genBls12_381_G1_Element = BLS12_381.G1.hashToGroup <$> genByteString
+
+genBls12_381_G2_Element :: Gen BLS12_381.G2.Element
+genBls12_381_G2_Element = BLS12_381.G2.hashToGroup <$> genByteString
+
+genBls12_381_MlResult :: Gen BLS12_381.Pairing.MlResult
+genBls12_381_MlResult = do
+  p1 <- genBls12_381_G1_Element
+  p2 <- genBls12_381_G2_Element
+  pure $ BLS12_381.Pairing.millerLoop p1 p2
