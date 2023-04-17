@@ -6,7 +6,7 @@
 --   
 --   Interface to the Plutus scripting support for the Cardano ledger.
 @package plutus-ledger-api
-@version 1.4.0.0
+@version 1.5.0.0
 
 
 -- | This module contains the code for handling the various kinds of
@@ -174,8 +174,9 @@ serialiseCompiledCode :: forall a. CompiledCode a -> SerialisedScript
 --   format that is understood by the network and can be stored on-chain.
 serialiseUPLC :: Program DeBruijn DefaultUni DefaultFun () -> SerialisedScript
 
--- | Deserialises a <a>SerialisedScript</a> back into an AST.
-deserialiseUPLC :: SerialisedScript -> Program DeBruijn DefaultUni DefaultFun ()
+-- | Deserialises a <a>SerialisedScript</a> back into an AST. Does *not* do
+--   ledger-language-version-specific checks like for allowable builtins.
+uncheckedDeserialiseUPLC :: SerialisedScript -> Program DeBruijn DefaultUni DefaultFun ()
 
 -- | An error that occurred during script deserialization.
 data ScriptDecodeError
@@ -188,16 +189,23 @@ CBORDeserialiseError :: !DeserialiseFailure -> ScriptDecodeError
 RemainderError :: !ByteString -> ScriptDecodeError
 
 -- | the plutus version of the given script is not enabled yet
-LanguageNotAvailableError :: !PlutusLedgerLanguage -> !ProtocolVersion -> !ProtocolVersion -> ScriptDecodeError
+LedgerLanguageNotAvailableError :: !PlutusLedgerLanguage -> !ProtocolVersion -> !ProtocolVersion -> ScriptDecodeError
 
--- | the script's plutus version
+-- | the script's ledger language
 [sdeAffectedLang] :: ScriptDecodeError -> !PlutusLedgerLanguage
 
--- | the protocol version that will first introduce/enable the plutus
---   version
+-- | the protocol version that will first introduce/enable the ledger
+--   language
 [sdeIntroPv] :: ScriptDecodeError -> !ProtocolVersion
 
--- | the protocol version in which the error occurred
+-- | the current protocol version
+[sdeThisPv] :: ScriptDecodeError -> !ProtocolVersion
+PlutusCoreLanguageNotAvailableError :: !Version -> !ProtocolVersion -> ScriptDecodeError
+
+-- | the script's Plutus Core language version
+[sdeAffectedVersion] :: ScriptDecodeError -> !Version
+
+-- | the current protocol version
 [sdeThisPv] :: ScriptDecodeError -> !ProtocolVersion
 
 -- | Check if a <tt>Script</tt> is "valid" according to a protocol version.
@@ -264,13 +272,9 @@ CekError :: !CekEvaluationException NamedDeBruijn DefaultUni DefaultFun -> Evalu
 --   indices
 DeBruijnError :: !FreeVariableError -> EvaluationError
 
--- | A deserialisation error
+-- | A deserialisation error TODO: make this error more informative when we
+--   have more information about what went wrong
 CodecError :: !ScriptDecodeError -> EvaluationError
-
--- | An error indicating a version tag that we don't support TODO: make
---   this error more informative when we have more information about what
---   went wrong
-IncompatibleVersionError :: !Version -> EvaluationError
 
 -- | An error indicating that the cost model parameters didn't match what
 --   we expected
@@ -1391,6 +1395,48 @@ VerifyEd25519Signature'memory'arguments :: ParamName
 VerifySchnorrSecp256k1Signature'cpu'arguments'intercept :: ParamName
 VerifySchnorrSecp256k1Signature'cpu'arguments'slope :: ParamName
 VerifySchnorrSecp256k1Signature'memory'arguments :: ParamName
+CekConstrCost'exBudgetCPU :: ParamName
+CekConstrCost'exBudgetMemory :: ParamName
+CekCaseCost'exBudgetCPU :: ParamName
+CekCaseCost'exBudgetMemory :: ParamName
+Bls12_381_G1_add'cpu'arguments :: ParamName
+Bls12_381_G1_add'memory'arguments :: ParamName
+Bls12_381_G1_compress'cpu'arguments :: ParamName
+Bls12_381_G1_compress'memory'arguments :: ParamName
+Bls12_381_G1_equal'cpu'arguments :: ParamName
+Bls12_381_G1_equal'memory'arguments :: ParamName
+Bls12_381_G1_hashToGroup'cpu'arguments'intercept :: ParamName
+Bls12_381_G1_hashToGroup'cpu'arguments'slope :: ParamName
+Bls12_381_G1_hashToGroup'memory'arguments :: ParamName
+Bls12_381_G1_neg'cpu'arguments :: ParamName
+Bls12_381_G1_neg'memory'arguments :: ParamName
+Bls12_381_G1_scalarMul'cpu'arguments'intercept :: ParamName
+Bls12_381_G1_scalarMul'cpu'arguments'slope :: ParamName
+Bls12_381_G1_scalarMul'memory'arguments :: ParamName
+Bls12_381_G1_uncompress'cpu'arguments :: ParamName
+Bls12_381_G1_uncompress'memory'arguments :: ParamName
+Bls12_381_G2_add'cpu'arguments :: ParamName
+Bls12_381_G2_add'memory'arguments :: ParamName
+Bls12_381_G2_compress'cpu'arguments :: ParamName
+Bls12_381_G2_compress'memory'arguments :: ParamName
+Bls12_381_G2_equal'cpu'arguments :: ParamName
+Bls12_381_G2_equal'memory'arguments :: ParamName
+Bls12_381_G2_hashToGroup'cpu'arguments'intercept :: ParamName
+Bls12_381_G2_hashToGroup'cpu'arguments'slope :: ParamName
+Bls12_381_G2_hashToGroup'memory'arguments :: ParamName
+Bls12_381_G2_neg'cpu'arguments :: ParamName
+Bls12_381_G2_neg'memory'arguments :: ParamName
+Bls12_381_G2_scalarMul'cpu'arguments'intercept :: ParamName
+Bls12_381_G2_scalarMul'cpu'arguments'slope :: ParamName
+Bls12_381_G2_scalarMul'memory'arguments :: ParamName
+Bls12_381_G2_uncompress'cpu'arguments :: ParamName
+Bls12_381_G2_uncompress'memory'arguments :: ParamName
+Bls12_381_finalVerify'cpu'arguments :: ParamName
+Bls12_381_finalVerify'memory'arguments :: ParamName
+Bls12_381_millerLoop'cpu'arguments :: ParamName
+Bls12_381_millerLoop'memory'arguments :: ParamName
+Bls12_381_mulMlResult'cpu'arguments :: ParamName
+Bls12_381_mulMlResult'memory'arguments :: ParamName
 
 -- | Given an ordered list of parameter values, tag them with their
 --   parameter names. If the passed parameter values are more than
@@ -2588,8 +2634,9 @@ serialiseCompiledCode :: forall a. CompiledCode a -> SerialisedScript
 --   format that is understood by the network and can be stored on-chain.
 serialiseUPLC :: Program DeBruijn DefaultUni DefaultFun () -> SerialisedScript
 
--- | Deserialises a <a>SerialisedScript</a> back into an AST.
-deserialiseUPLC :: SerialisedScript -> Program DeBruijn DefaultUni DefaultFun ()
+-- | Deserialises a <a>SerialisedScript</a> back into an AST. Does *not* do
+--   ledger-language-version-specific checks like for allowable builtins.
+uncheckedDeserialiseUPLC :: SerialisedScript -> Program DeBruijn DefaultUni DefaultFun ()
 
 -- | Check if a <tt>Script</tt> is "valid" according to a protocol version.
 --   At the moment this means "deserialises correctly", which in particular
@@ -3297,13 +3344,9 @@ CekError :: !CekEvaluationException NamedDeBruijn DefaultUni DefaultFun -> Evalu
 --   indices
 DeBruijnError :: !FreeVariableError -> EvaluationError
 
--- | A deserialisation error
+-- | A deserialisation error TODO: make this error more informative when we
+--   have more information about what went wrong
 CodecError :: !ScriptDecodeError -> EvaluationError
-
--- | An error indicating a version tag that we don't support TODO: make
---   this error more informative when we have more information about what
---   went wrong
-IncompatibleVersionError :: !Version -> EvaluationError
 
 -- | An error indicating that the cost model parameters didn't match what
 --   we expected
@@ -3320,16 +3363,23 @@ CBORDeserialiseError :: !DeserialiseFailure -> ScriptDecodeError
 RemainderError :: !ByteString -> ScriptDecodeError
 
 -- | the plutus version of the given script is not enabled yet
-LanguageNotAvailableError :: !PlutusLedgerLanguage -> !ProtocolVersion -> !ProtocolVersion -> ScriptDecodeError
+LedgerLanguageNotAvailableError :: !PlutusLedgerLanguage -> !ProtocolVersion -> !ProtocolVersion -> ScriptDecodeError
 
--- | the script's plutus version
+-- | the script's ledger language
 [sdeAffectedLang] :: ScriptDecodeError -> !PlutusLedgerLanguage
 
--- | the protocol version that will first introduce/enable the plutus
---   version
+-- | the protocol version that will first introduce/enable the ledger
+--   language
 [sdeIntroPv] :: ScriptDecodeError -> !ProtocolVersion
 
--- | the protocol version in which the error occurred
+-- | the current protocol version
+[sdeThisPv] :: ScriptDecodeError -> !ProtocolVersion
+PlutusCoreLanguageNotAvailableError :: !Version -> !ProtocolVersion -> ScriptDecodeError
+
+-- | the script's Plutus Core language version
+[sdeAffectedVersion] :: ScriptDecodeError -> !Version
+
+-- | the current protocol version
 [sdeThisPv] :: ScriptDecodeError -> !ProtocolVersion
 
 
@@ -3348,8 +3398,9 @@ serialiseCompiledCode :: forall a. CompiledCode a -> SerialisedScript
 --   format that is understood by the network and can be stored on-chain.
 serialiseUPLC :: Program DeBruijn DefaultUni DefaultFun () -> SerialisedScript
 
--- | Deserialises a <a>SerialisedScript</a> back into an AST.
-deserialiseUPLC :: SerialisedScript -> Program DeBruijn DefaultUni DefaultFun ()
+-- | Deserialises a <a>SerialisedScript</a> back into an AST. Does *not* do
+--   ledger-language-version-specific checks like for allowable builtins.
+uncheckedDeserialiseUPLC :: SerialisedScript -> Program DeBruijn DefaultUni DefaultFun ()
 
 -- | Check if a <tt>Script</tt> is "valid" according to a protocol version.
 --   At the moment this means "deserialises correctly", which in particular
@@ -3616,6 +3667,48 @@ VerifyEd25519Signature'memory'arguments :: ParamName
 VerifySchnorrSecp256k1Signature'cpu'arguments'intercept :: ParamName
 VerifySchnorrSecp256k1Signature'cpu'arguments'slope :: ParamName
 VerifySchnorrSecp256k1Signature'memory'arguments :: ParamName
+CekConstrCost'exBudgetCPU :: ParamName
+CekConstrCost'exBudgetMemory :: ParamName
+CekCaseCost'exBudgetCPU :: ParamName
+CekCaseCost'exBudgetMemory :: ParamName
+Bls12_381_G1_add'cpu'arguments :: ParamName
+Bls12_381_G1_add'memory'arguments :: ParamName
+Bls12_381_G1_compress'cpu'arguments :: ParamName
+Bls12_381_G1_compress'memory'arguments :: ParamName
+Bls12_381_G1_equal'cpu'arguments :: ParamName
+Bls12_381_G1_equal'memory'arguments :: ParamName
+Bls12_381_G1_hashToGroup'cpu'arguments'intercept :: ParamName
+Bls12_381_G1_hashToGroup'cpu'arguments'slope :: ParamName
+Bls12_381_G1_hashToGroup'memory'arguments :: ParamName
+Bls12_381_G1_neg'cpu'arguments :: ParamName
+Bls12_381_G1_neg'memory'arguments :: ParamName
+Bls12_381_G1_scalarMul'cpu'arguments'intercept :: ParamName
+Bls12_381_G1_scalarMul'cpu'arguments'slope :: ParamName
+Bls12_381_G1_scalarMul'memory'arguments :: ParamName
+Bls12_381_G1_uncompress'cpu'arguments :: ParamName
+Bls12_381_G1_uncompress'memory'arguments :: ParamName
+Bls12_381_G2_add'cpu'arguments :: ParamName
+Bls12_381_G2_add'memory'arguments :: ParamName
+Bls12_381_G2_compress'cpu'arguments :: ParamName
+Bls12_381_G2_compress'memory'arguments :: ParamName
+Bls12_381_G2_equal'cpu'arguments :: ParamName
+Bls12_381_G2_equal'memory'arguments :: ParamName
+Bls12_381_G2_hashToGroup'cpu'arguments'intercept :: ParamName
+Bls12_381_G2_hashToGroup'cpu'arguments'slope :: ParamName
+Bls12_381_G2_hashToGroup'memory'arguments :: ParamName
+Bls12_381_G2_neg'cpu'arguments :: ParamName
+Bls12_381_G2_neg'memory'arguments :: ParamName
+Bls12_381_G2_scalarMul'cpu'arguments'intercept :: ParamName
+Bls12_381_G2_scalarMul'cpu'arguments'slope :: ParamName
+Bls12_381_G2_scalarMul'memory'arguments :: ParamName
+Bls12_381_G2_uncompress'cpu'arguments :: ParamName
+Bls12_381_G2_uncompress'memory'arguments :: ParamName
+Bls12_381_finalVerify'cpu'arguments :: ParamName
+Bls12_381_finalVerify'memory'arguments :: ParamName
+Bls12_381_millerLoop'cpu'arguments :: ParamName
+Bls12_381_millerLoop'memory'arguments :: ParamName
+Bls12_381_mulMlResult'cpu'arguments :: ParamName
+Bls12_381_mulMlResult'memory'arguments :: ParamName
 
 -- | A fatal error when trying to create a cost given some plain costmodel
 --   parameters.
@@ -4085,13 +4178,9 @@ CekError :: !CekEvaluationException NamedDeBruijn DefaultUni DefaultFun -> Evalu
 --   indices
 DeBruijnError :: !FreeVariableError -> EvaluationError
 
--- | A deserialisation error
+-- | A deserialisation error TODO: make this error more informative when we
+--   have more information about what went wrong
 CodecError :: !ScriptDecodeError -> EvaluationError
-
--- | An error indicating a version tag that we don't support TODO: make
---   this error more informative when we have more information about what
---   went wrong
-IncompatibleVersionError :: !Version -> EvaluationError
 
 -- | An error indicating that the cost model parameters didn't match what
 --   we expected
@@ -4108,16 +4197,23 @@ CBORDeserialiseError :: !DeserialiseFailure -> ScriptDecodeError
 RemainderError :: !ByteString -> ScriptDecodeError
 
 -- | the plutus version of the given script is not enabled yet
-LanguageNotAvailableError :: !PlutusLedgerLanguage -> !ProtocolVersion -> !ProtocolVersion -> ScriptDecodeError
+LedgerLanguageNotAvailableError :: !PlutusLedgerLanguage -> !ProtocolVersion -> !ProtocolVersion -> ScriptDecodeError
 
--- | the script's plutus version
+-- | the script's ledger language
 [sdeAffectedLang] :: ScriptDecodeError -> !PlutusLedgerLanguage
 
--- | the protocol version that will first introduce/enable the plutus
---   version
+-- | the protocol version that will first introduce/enable the ledger
+--   language
 [sdeIntroPv] :: ScriptDecodeError -> !ProtocolVersion
 
--- | the protocol version in which the error occurred
+-- | the current protocol version
+[sdeThisPv] :: ScriptDecodeError -> !ProtocolVersion
+PlutusCoreLanguageNotAvailableError :: !Version -> !ProtocolVersion -> ScriptDecodeError
+
+-- | the script's Plutus Core language version
+[sdeAffectedVersion] :: ScriptDecodeError -> !Version
+
+-- | the current protocol version
 [sdeThisPv] :: ScriptDecodeError -> !ProtocolVersion
 
 
@@ -4136,8 +4232,9 @@ serialiseCompiledCode :: forall a. CompiledCode a -> SerialisedScript
 --   format that is understood by the network and can be stored on-chain.
 serialiseUPLC :: Program DeBruijn DefaultUni DefaultFun () -> SerialisedScript
 
--- | Deserialises a <a>SerialisedScript</a> back into an AST.
-deserialiseUPLC :: SerialisedScript -> Program DeBruijn DefaultUni DefaultFun ()
+-- | Deserialises a <a>SerialisedScript</a> back into an AST. Does *not* do
+--   ledger-language-version-specific checks like for allowable builtins.
+uncheckedDeserialiseUPLC :: SerialisedScript -> Program DeBruijn DefaultUni DefaultFun ()
 
 -- | Check if a <tt>Script</tt> is "valid" according to a protocol version.
 --   At the moment this means "deserialises correctly", which in particular
@@ -4873,13 +4970,9 @@ CekError :: !CekEvaluationException NamedDeBruijn DefaultUni DefaultFun -> Evalu
 --   indices
 DeBruijnError :: !FreeVariableError -> EvaluationError
 
--- | A deserialisation error
+-- | A deserialisation error TODO: make this error more informative when we
+--   have more information about what went wrong
 CodecError :: !ScriptDecodeError -> EvaluationError
-
--- | An error indicating a version tag that we don't support TODO: make
---   this error more informative when we have more information about what
---   went wrong
-IncompatibleVersionError :: !Version -> EvaluationError
 
 -- | An error indicating that the cost model parameters didn't match what
 --   we expected
@@ -4896,14 +4989,21 @@ CBORDeserialiseError :: !DeserialiseFailure -> ScriptDecodeError
 RemainderError :: !ByteString -> ScriptDecodeError
 
 -- | the plutus version of the given script is not enabled yet
-LanguageNotAvailableError :: !PlutusLedgerLanguage -> !ProtocolVersion -> !ProtocolVersion -> ScriptDecodeError
+LedgerLanguageNotAvailableError :: !PlutusLedgerLanguage -> !ProtocolVersion -> !ProtocolVersion -> ScriptDecodeError
 
--- | the script's plutus version
+-- | the script's ledger language
 [sdeAffectedLang] :: ScriptDecodeError -> !PlutusLedgerLanguage
 
--- | the protocol version that will first introduce/enable the plutus
---   version
+-- | the protocol version that will first introduce/enable the ledger
+--   language
 [sdeIntroPv] :: ScriptDecodeError -> !ProtocolVersion
 
--- | the protocol version in which the error occurred
+-- | the current protocol version
+[sdeThisPv] :: ScriptDecodeError -> !ProtocolVersion
+PlutusCoreLanguageNotAvailableError :: !Version -> !ProtocolVersion -> ScriptDecodeError
+
+-- | the script's Plutus Core language version
+[sdeAffectedVersion] :: ScriptDecodeError -> !Version
+
+-- | the current protocol version
 [sdeThisPv] :: ScriptDecodeError -> !ProtocolVersion

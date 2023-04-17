@@ -56,7 +56,3 @@ evalUplcProg :: UplcEvaluator
 -- | Run the UPLC evaluation tests given an <tt>evaluator</tt> that
 --   evaluates UPLC programs.
 runUplcEvalTests :: UplcEvaluator -> (FilePath -> Bool) -> IO ()
-
--- | For debugging failed UPLC evaluation tests (Agda implementation).
---   Called by `test-utils`.
-agdaEvalUplcProgDebug :: UplcProg -> Either String UplcProg

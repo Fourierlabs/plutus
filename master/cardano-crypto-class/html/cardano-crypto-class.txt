@@ -6,7 +6,260 @@
 --   
 --   Type classes abstracting over cryptography primitives for Cardano
 @package cardano-crypto-class
-@version 2.1.0.0
+@version 2.1.1.0
+
+module Cardano.Crypto.EllipticCurve.BLS12_381.Internal
+data ScalarPtr
+data PointPtr curve
+data AffinePtr curve
+type Point1Ptr = PointPtr Curve1
+type Point2Ptr = PointPtr Curve2
+type Affine1Ptr = AffinePtr Curve1
+type Affine2Ptr = AffinePtr Curve2
+data PTPtr
+data Curve1
+data Curve2
+c_blst_success :: CInt
+c_blst_error_bad_encoding :: CInt
+c_blst_error_point_not_on_curve :: CInt
+c_blst_error_point_not_in_group :: CInt
+c_blst_error_aggr_type_mismatch :: CInt
+c_blst_error_verify_fail :: CInt
+c_blst_error_pk_is_infinity :: CInt
+c_blst_error_bad_scalar :: CInt
+data Affine curve
+type Affine1 = Affine Curve1
+type Affine2 = Affine Curve2
+data BLSTError
+BLST_SUCCESS :: BLSTError
+BLST_BAD_ENCODING :: BLSTError
+BLST_POINT_NOT_ON_CURVE :: BLSTError
+BLST_POINT_NOT_IN_GROUP :: BLSTError
+BLST_AGGR_TYPE_MISMATCH :: BLSTError
+BLST_VERIFY_FAIL :: BLSTError
+BLST_PK_IS_INFINITY :: BLSTError
+BLST_BAD_SCALAR :: BLSTError
+BLST_UNKNOWN_ERROR :: BLSTError
+
+-- | A point on an elliptic curve. This type guarantees that the point is
+--   part of the | prime order subgroup.
+data Point curve
+type Point1 = Point Curve1
+type Point2 = Point Curve2
+
+-- | Target element without the final exponantiation. By defining target
+--   elements | as such, we save up the final exponantiation when computing
+--   a pairing, and only | compute it when necessary (e.g. comparison with
+--   another point or serialisation)
+data PT
+data Scalar
+unsafePointFromPointPtr :: PointPtr curve -> Point curve
+
+-- | The period of scalar modulo operations.
+scalarPeriod :: Integer
+
+-- | BLS curve operations. Class methods are low-level; user code will want
+--   to use higher-level wrappers such as <a>blsAddOrDouble</a>,
+--   <a>blsMult</a>, <a>blsCneg</a>, <a>blsNeg</a>, etc.
+class BLS curve
+c_blst_on_curve :: BLS curve => PointPtr curve -> IO Bool
+c_blst_add_or_double :: BLS curve => PointPtr curve -> PointPtr curve -> PointPtr curve -> IO ()
+c_blst_mult :: BLS curve => PointPtr curve -> PointPtr curve -> ScalarPtr -> CSize -> IO ()
+c_blst_cneg :: BLS curve => PointPtr curve -> Bool -> IO ()
+c_blst_hash :: BLS curve => PointPtr curve -> Ptr CChar -> CSize -> Ptr CChar -> CSize -> Ptr CChar -> CSize -> IO ()
+c_blst_compress :: BLS curve => Ptr CChar -> PointPtr curve -> IO ()
+c_blst_serialize :: BLS curve => Ptr CChar -> PointPtr curve -> IO ()
+c_blst_uncompress :: BLS curve => AffinePtr curve -> Ptr CChar -> IO CInt
+c_blst_deserialize :: BLS curve => AffinePtr curve -> Ptr CChar -> IO CInt
+c_blst_in_g :: BLS curve => PointPtr curve -> IO Bool
+c_blst_to_affine :: BLS curve => AffinePtr curve -> PointPtr curve -> IO ()
+c_blst_from_affine :: BLS curve => PointPtr curve -> AffinePtr curve -> IO ()
+c_blst_affine_in_g :: BLS curve => AffinePtr curve -> IO Bool
+c_blst_generator :: BLS curve => PointPtr curve
+c_blst_p_is_equal :: BLS curve => PointPtr curve -> PointPtr curve -> IO Bool
+c_blst_p_is_inf :: BLS curve => PointPtr curve -> IO Bool
+c_blst_miller_loop :: PTPtr -> Affine2Ptr -> Affine1Ptr -> IO ()
+c_blst_fp12_mul :: PTPtr -> PTPtr -> PTPtr -> IO ()
+c_blst_fp12_is_equal :: PTPtr -> PTPtr -> IO Bool
+c_blst_fp12_finalverify :: PTPtr -> PTPtr -> IO Bool
+c_blst_scalar_fr_check :: ScalarPtr -> IO Bool
+c_blst_scalar_from_fr :: ScalarPtr -> FrPtr -> IO ()
+c_blst_fr_from_scalar :: FrPtr -> ScalarPtr -> IO ()
+c_blst_scalar_from_be_bytes :: ScalarPtr -> Ptr CChar -> CSize -> IO Bool
+c_blst_bendian_from_scalar :: Ptr CChar -> ScalarPtr -> IO ()
+
+-- | Sizes of various representations of elliptic curve points. | Size of a
+--   curve point in memory
+sizePoint :: forall curve. BLS curve => Proxy curve -> Int
+withPoint :: forall a curve. Point curve -> (PointPtr curve -> IO a) -> IO a
+withNewPoint :: forall curve a. BLS curve => (PointPtr curve -> IO a) -> IO (a, Point curve)
+withNewPoint_ :: BLS curve => (PointPtr curve -> IO a) -> IO a
+withNewPoint' :: BLS curve => (PointPtr curve -> IO a) -> IO (Point curve)
+clonePoint :: forall curve. BLS curve => Point curve -> IO (Point curve)
+
+-- | Size of a curved point when serialized in compressed form
+compressedSizePoint :: forall curve. BLS curve => Proxy curve -> Int
+
+-- | Size of a curved point when serialized in uncompressed form
+serializedSizePoint :: forall curve. BLS curve => Proxy curve -> Int
+
+-- | In-memory size of the affine representation of a curve point
+sizeAffine :: forall curve. BLS curve => Proxy curve -> Int
+withAffine :: forall a curve. Affine curve -> (AffinePtr curve -> IO a) -> IO a
+withNewAffine :: forall curve a. BLS curve => (AffinePtr curve -> IO a) -> IO (a, Affine curve)
+withNewAffine_ :: BLS curve => (AffinePtr curve -> IO a) -> IO a
+withNewAffine' :: BLS curve => (AffinePtr curve -> IO a) -> IO (Affine curve)
+sizePT :: Int
+withPT :: PT -> (PTPtr -> IO a) -> IO a
+withNewPT :: (PTPtr -> IO a) -> IO (a, PT)
+withNewPT_ :: (PTPtr -> IO a) -> IO a
+withNewPT' :: (PTPtr -> IO a) -> IO PT
+sizeScalar :: Int
+withScalar :: Scalar -> (ScalarPtr -> IO a) -> IO a
+withNewScalar :: (ScalarPtr -> IO a) -> IO (a, Scalar)
+withNewScalar_ :: (ScalarPtr -> IO a) -> IO a
+withNewScalar' :: (ScalarPtr -> IO a) -> IO Scalar
+cloneScalar :: Scalar -> IO Scalar
+sizeFr :: Int
+withFr :: Fr -> (FrPtr -> IO a) -> IO a
+withNewFr :: (FrPtr -> IO a) -> IO (a, Fr)
+withNewFr_ :: (FrPtr -> IO a) -> IO a
+withNewFr' :: (FrPtr -> IO a) -> IO Fr
+cloneFr :: Fr -> IO Fr
+integerAsCStrL :: Int -> Integer -> (Ptr CChar -> Int -> IO a) -> IO a
+cstrToInteger :: Ptr CChar -> Int -> IO Integer
+integerToBS :: Integer -> ByteString
+padBS :: Int -> ByteString -> ByteString
+
+-- | Check whether a point is in the group corresponding to its elliptic
+--   curve
+blsInGroup :: BLS curve => Point curve -> Bool
+
+-- | Curve point addition.
+blsAddOrDouble :: BLS curve => Point curve -> Point curve -> Point curve
+
+-- | Scalar multiplication of a curve point. The scalar will be brought
+--   into the range of modular arithmetic by means of a modulo operation
+--   over the <a>scalarPeriod</a>. Negative number will also be brought to
+--   the range [0, <a>scalarPeriod</a> - 1] via modular reduction.
+blsMult :: BLS curve => Point curve -> Integer -> Point curve
+
+-- | Conditional curve point negation. <tt>blsCneg x cond = if cond then
+--   neg x else x</tt>
+blsCneg :: BLS curve => Point curve -> Bool -> Point curve
+
+-- | Unconditional curve point negation
+blsNeg :: BLS curve => Point curve -> Point curve
+blsCompress :: forall curve. BLS curve => Point curve -> ByteString
+blsSerialize :: forall curve. BLS curve => Point curve -> ByteString
+blsUncompress :: forall curve. BLS curve => ByteString -> Either BLSTError (Point curve)
+blsDeserialize :: forall curve. BLS curve => ByteString -> Either BLSTError (Point curve)
+
+-- | <tt>blsHash msg mDST mAug</tt> generates the elliptic curve blsHash
+--   for the given message <tt>msg</tt>; <tt>mDST</tt> and <tt>mAug</tt>
+--   are the optional <tt>aug</tt> and <tt>dst</tt> arguments.
+blsHash :: BLS curve => ByteString -> Maybe ByteString -> Maybe ByteString -> Point curve
+blsGenerator :: BLS curve => Point curve
+
+-- | Infinity check on curve points.
+blsIsInf :: BLS curve => Point curve -> Bool
+toAffine :: BLS curve => Point curve -> Affine curve
+fromAffine :: BLS curve => Affine curve -> Point curve
+affineInG :: BLS curve => Affine curve -> Bool
+ptMult :: PT -> PT -> PT
+ptFinalVerify :: PT -> PT -> Bool
+scalarFromFr :: Fr -> IO Scalar
+frFromScalar :: Scalar -> IO Fr
+frFromCanonicalScalar :: Scalar -> IO (Maybe Fr)
+scalarFromBS :: ByteString -> Either BLSTError Scalar
+scalarToBS :: Scalar -> ByteString
+scalarFromInteger :: Integer -> IO Scalar
+scalarToInteger :: Scalar -> IO Integer
+scalarCanonical :: Scalar -> Bool
+millerLoop :: Point1 -> Point2 -> PT
+instance GHC.Enum.Bounded Cardano.Crypto.EllipticCurve.BLS12_381.Internal.BLSTError
+instance GHC.Enum.Enum Cardano.Crypto.EllipticCurve.BLS12_381.Internal.BLSTError
+instance GHC.Classes.Ord Cardano.Crypto.EllipticCurve.BLS12_381.Internal.BLSTError
+instance GHC.Classes.Eq Cardano.Crypto.EllipticCurve.BLS12_381.Internal.BLSTError
+instance GHC.Show.Show Cardano.Crypto.EllipticCurve.BLS12_381.Internal.BLSTError
+instance Cardano.Crypto.EllipticCurve.BLS12_381.Internal.BLS curve => GHC.Classes.Eq (Cardano.Crypto.EllipticCurve.BLS12_381.Internal.AffinePtr curve)
+instance Cardano.Crypto.EllipticCurve.BLS12_381.Internal.BLS Cardano.Crypto.EllipticCurve.BLS12_381.Internal.Curve1
+instance Cardano.Crypto.EllipticCurve.BLS12_381.Internal.BLS Cardano.Crypto.EllipticCurve.BLS12_381.Internal.Curve2
+instance Cardano.Crypto.EllipticCurve.BLS12_381.Internal.BLS curve => GHC.Classes.Eq (Cardano.Crypto.EllipticCurve.BLS12_381.Internal.Affine curve)
+instance Cardano.Crypto.EllipticCurve.BLS12_381.Internal.BLS curve => GHC.Classes.Eq (Cardano.Crypto.EllipticCurve.BLS12_381.Internal.Point curve)
+instance GHC.Classes.Eq Cardano.Crypto.EllipticCurve.BLS12_381.Internal.Fr
+instance GHC.Classes.Eq Cardano.Crypto.EllipticCurve.BLS12_381.Internal.Scalar
+instance GHC.Classes.Eq Cardano.Crypto.EllipticCurve.BLS12_381.Internal.PT
+
+module Cardano.Crypto.EllipticCurve.BLS12_381
+
+-- | A point on an elliptic curve. This type guarantees that the point is
+--   part of the | prime order subgroup.
+data Point curve
+type Point1 = Point Curve1
+type Point2 = Point Curve2
+
+-- | Target element without the final exponantiation. By defining target
+--   elements | as such, we save up the final exponantiation when computing
+--   a pairing, and only | compute it when necessary (e.g. comparison with
+--   another point or serialisation)
+data PT
+data Curve1
+data Curve2
+data BLSTError
+BLST_SUCCESS :: BLSTError
+BLST_BAD_ENCODING :: BLSTError
+BLST_POINT_NOT_ON_CURVE :: BLSTError
+BLST_POINT_NOT_IN_GROUP :: BLSTError
+BLST_AGGR_TYPE_MISMATCH :: BLSTError
+BLST_VERIFY_FAIL :: BLSTError
+BLST_PK_IS_INFINITY :: BLSTError
+BLST_BAD_SCALAR :: BLSTError
+BLST_UNKNOWN_ERROR :: BLSTError
+
+-- | BLS curve operations. Class methods are low-level; user code will want
+--   to use higher-level wrappers such as <a>blsAddOrDouble</a>,
+--   <a>blsMult</a>, <a>blsCneg</a>, <a>blsNeg</a>, etc.
+class BLS curve
+
+-- | Check whether a point is in the group corresponding to its elliptic
+--   curve
+blsInGroup :: BLS curve => Point curve -> Bool
+
+-- | Curve point addition.
+blsAddOrDouble :: BLS curve => Point curve -> Point curve -> Point curve
+
+-- | Scalar multiplication of a curve point. The scalar will be brought
+--   into the range of modular arithmetic by means of a modulo operation
+--   over the <a>scalarPeriod</a>. Negative number will also be brought to
+--   the range [0, <a>scalarPeriod</a> - 1] via modular reduction.
+blsMult :: BLS curve => Point curve -> Integer -> Point curve
+
+-- | Conditional curve point negation. <tt>blsCneg x cond = if cond then
+--   neg x else x</tt>
+blsCneg :: BLS curve => Point curve -> Bool -> Point curve
+
+-- | Unconditional curve point negation
+blsNeg :: BLS curve => Point curve -> Point curve
+blsCompress :: forall curve. BLS curve => Point curve -> ByteString
+blsSerialize :: forall curve. BLS curve => Point curve -> ByteString
+blsUncompress :: forall curve. BLS curve => ByteString -> Either BLSTError (Point curve)
+blsDeserialize :: forall curve. BLS curve => ByteString -> Either BLSTError (Point curve)
+
+-- | <tt>blsHash msg mDST mAug</tt> generates the elliptic curve blsHash
+--   for the given message <tt>msg</tt>; <tt>mDST</tt> and <tt>mAug</tt>
+--   are the optional <tt>aug</tt> and <tt>dst</tt> arguments.
+blsHash :: BLS curve => ByteString -> Maybe ByteString -> Maybe ByteString -> Point curve
+blsGenerator :: BLS curve => Point curve
+
+-- | Infinity check on curve points.
+blsIsInf :: BLS curve => Point curve -> Bool
+ptMult :: PT -> PT -> PT
+ptFinalVerify :: PT -> PT -> Bool
+millerLoop :: Point1 -> Point2 -> PT
+
+-- | The period of scalar modulo operations.
+scalarPeriod :: Integer
 
 module Cardano.Crypto.Libsodium.Constants
 type CRYPTO_SHA256_BYTES = 32

@@ -6,7 +6,7 @@
 --   
 --   Libraries for Plutus Tx and its prelude
 @package plutus-tx
-@version 1.4.0.0
+@version 1.5.0.0
 
 module PlutusTx.Bool
 data Bool
@@ -497,6 +497,44 @@ unsafeDataAsI :: BuiltinData -> BuiltinInteger
 unsafeDataAsB :: BuiltinData -> BuiltinByteString
 equalsData :: BuiltinData -> BuiltinData -> BuiltinBool
 serialiseData :: BuiltinData -> BuiltinByteString
+
+-- | Note [Wrapping the BLS12-381 types in PlutusTx]
+--   
+--   As explained in Note [Wrapping the BLS12-381 types in Plutus Core],
+--   the types exported by the Haskell bindings for the <tt>blst</tt>
+--   library are ForeignPtrs which have to be wrapped in newtypes to keep
+--   the PLC builtin machinery happy. However, there's a further
+--   complication in PlutusTx: if you try to use the newtypes directly then
+--   the plugin sees through the newtypes to the foreign pointers and fails
+--   because it doesn't know how to handle them. To avoid this we further
+--   wrap the newtypes in datatypes here. We could have done this in Plutus
+--   Core by using `data` instead of `newtype`, but then the code here
+--   dealing with BLS types and builtins doesn't look like the code for the
+--   other builtins. Because of this it seemed safer and more uniform to
+--   add the datatype wrapper here rather than in the Plutus Core code.
+data BuiltinBLS12_381_G1_Element
+BuiltinBLS12_381_G1_Element :: Element -> BuiltinBLS12_381_G1_Element
+bls12_381_G1_equals :: BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G1_Element -> BuiltinBool
+bls12_381_G1_add :: BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G1_Element
+bls12_381_G1_neg :: BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G1_Element
+bls12_381_G1_scalarMul :: BuiltinInteger -> BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G1_Element
+bls12_381_G1_compress :: BuiltinBLS12_381_G1_Element -> BuiltinByteString
+bls12_381_G1_uncompress :: BuiltinByteString -> BuiltinBLS12_381_G1_Element
+bls12_381_G1_hashToGroup :: BuiltinByteString -> BuiltinBLS12_381_G1_Element
+data BuiltinBLS12_381_G2_Element
+BuiltinBLS12_381_G2_Element :: Element -> BuiltinBLS12_381_G2_Element
+bls12_381_G2_equals :: BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_G2_Element -> BuiltinBool
+bls12_381_G2_add :: BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_G2_Element
+bls12_381_G2_neg :: BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_G2_Element
+bls12_381_G2_scalarMul :: BuiltinInteger -> BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_G2_Element
+bls12_381_G2_compress :: BuiltinBLS12_381_G2_Element -> BuiltinByteString
+bls12_381_G2_uncompress :: BuiltinByteString -> BuiltinBLS12_381_G2_Element
+bls12_381_G2_hashToGroup :: BuiltinByteString -> BuiltinBLS12_381_G2_Element
+data BuiltinBLS12_381_MlResult
+BuiltinBLS12_381_MlResult :: MlResult -> BuiltinBLS12_381_MlResult
+bls12_381_millerLoop :: BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_MlResult
+bls12_381_mulMlResult :: BuiltinBLS12_381_MlResult -> BuiltinBLS12_381_MlResult -> BuiltinBLS12_381_MlResult
+bls12_381_finalVerify :: BuiltinBLS12_381_MlResult -> BuiltinBLS12_381_MlResult -> BuiltinBool
 instance Data.Data.Data PlutusTx.Builtins.Internal.BuiltinBool
 instance Data.Data.Data PlutusTx.Builtins.Internal.BuiltinUnit
 instance Data.Data.Data PlutusTx.Builtins.Internal.BuiltinByteString
@@ -504,6 +542,18 @@ instance Data.Data.Data PlutusTx.Builtins.Internal.BuiltinString
 instance (Data.Data.Data a, Data.Data.Data b) => Data.Data.Data (PlutusTx.Builtins.Internal.BuiltinPair a b)
 instance Data.Data.Data a => Data.Data.Data (PlutusTx.Builtins.Internal.BuiltinList a)
 instance Data.Data.Data PlutusTx.Builtins.Internal.BuiltinData
+instance GHC.Show.Show PlutusTx.Builtins.Internal.BuiltinBLS12_381_MlResult
+instance GHC.Classes.Eq PlutusTx.Builtins.Internal.BuiltinBLS12_381_MlResult
+instance Control.DeepSeq.NFData PlutusTx.Builtins.Internal.BuiltinBLS12_381_MlResult
+instance Prettyprinter.Internal.Pretty PlutusTx.Builtins.Internal.BuiltinBLS12_381_MlResult
+instance GHC.Show.Show PlutusTx.Builtins.Internal.BuiltinBLS12_381_G2_Element
+instance GHC.Classes.Eq PlutusTx.Builtins.Internal.BuiltinBLS12_381_G2_Element
+instance Control.DeepSeq.NFData PlutusTx.Builtins.Internal.BuiltinBLS12_381_G2_Element
+instance Prettyprinter.Internal.Pretty PlutusTx.Builtins.Internal.BuiltinBLS12_381_G2_Element
+instance GHC.Show.Show PlutusTx.Builtins.Internal.BuiltinBLS12_381_G1_Element
+instance GHC.Classes.Eq PlutusTx.Builtins.Internal.BuiltinBLS12_381_G1_Element
+instance Control.DeepSeq.NFData PlutusTx.Builtins.Internal.BuiltinBLS12_381_G1_Element
+instance Prettyprinter.Internal.Pretty PlutusTx.Builtins.Internal.BuiltinBLS12_381_G1_Element
 instance GHC.Show.Show PlutusTx.Builtins.Internal.BuiltinData
 instance GHC.Classes.Eq PlutusTx.Builtins.Internal.BuiltinData
 instance GHC.Classes.Ord PlutusTx.Builtins.Internal.BuiltinData
@@ -553,6 +603,9 @@ instance PlutusTx.Builtins.Class.ToBuiltin (PlutusTx.Builtins.Internal.BuiltinDa
 instance PlutusTx.Builtins.Class.ToBuiltin [PlutusTx.Builtins.Internal.BuiltinData] (PlutusTx.Builtins.Internal.BuiltinList PlutusTx.Builtins.Internal.BuiltinData)
 instance PlutusTx.Builtins.Class.ToBuiltin [(PlutusTx.Builtins.Internal.BuiltinData, PlutusTx.Builtins.Internal.BuiltinData)] (PlutusTx.Builtins.Internal.BuiltinList (PlutusTx.Builtins.Internal.BuiltinPair PlutusTx.Builtins.Internal.BuiltinData PlutusTx.Builtins.Internal.BuiltinData))
 instance PlutusTx.Builtins.Class.ToBuiltin PlutusTx.Builtins.Internal.BuiltinData PlutusTx.Builtins.Internal.BuiltinData
+instance PlutusTx.Builtins.Class.ToBuiltin PlutusCore.Crypto.BLS12_381.G1.Element PlutusTx.Builtins.Internal.BuiltinBLS12_381_G1_Element
+instance PlutusTx.Builtins.Class.ToBuiltin PlutusCore.Crypto.BLS12_381.G2.Element PlutusTx.Builtins.Internal.BuiltinBLS12_381_G2_Element
+instance PlutusTx.Builtins.Class.ToBuiltin PlutusCore.Crypto.BLS12_381.Pairing.MlResult PlutusTx.Builtins.Internal.BuiltinBLS12_381_MlResult
 instance PlutusTx.Builtins.Class.FromBuiltin PlutusTx.Builtins.Internal.BuiltinInteger GHC.Num.Integer.Integer
 instance PlutusTx.Builtins.Class.FromBuiltin PlutusTx.Builtins.Internal.BuiltinBool GHC.Types.Bool
 instance PlutusTx.Builtins.Class.FromBuiltin PlutusTx.Builtins.Internal.BuiltinUnit ()
@@ -561,6 +614,9 @@ instance PlutusTx.Builtins.Class.FromBuiltin PlutusTx.Builtins.Internal.BuiltinS
 instance (PlutusTx.Builtins.Class.FromBuiltin arep a, PlutusTx.Builtins.Class.FromBuiltin brep b) => PlutusTx.Builtins.Class.FromBuiltin (PlutusTx.Builtins.Internal.BuiltinPair arep brep) (a, b)
 instance PlutusTx.Builtins.Class.FromBuiltin arep a => PlutusTx.Builtins.Class.FromBuiltin (PlutusTx.Builtins.Internal.BuiltinList arep) [a]
 instance PlutusTx.Builtins.Class.FromBuiltin PlutusTx.Builtins.Internal.BuiltinData PlutusTx.Builtins.Internal.BuiltinData
+instance PlutusTx.Builtins.Class.FromBuiltin PlutusTx.Builtins.Internal.BuiltinBLS12_381_G1_Element PlutusCore.Crypto.BLS12_381.G1.Element
+instance PlutusTx.Builtins.Class.FromBuiltin PlutusTx.Builtins.Internal.BuiltinBLS12_381_G2_Element PlutusCore.Crypto.BLS12_381.G2.Element
+instance PlutusTx.Builtins.Class.FromBuiltin PlutusTx.Builtins.Internal.BuiltinBLS12_381_MlResult PlutusCore.Crypto.BLS12_381.Pairing.MlResult
 instance Data.String.IsString PlutusTx.Builtins.Internal.BuiltinString
 instance Data.String.IsString PlutusTx.Builtins.Internal.BuiltinByteString
 
@@ -845,6 +901,41 @@ matchList :: forall a r. BuiltinList a -> r -> (a -> BuiltinList a -> r) -> r
 -- | Emit the given string as a trace message before evaluating the
 --   argument.
 trace :: BuiltinString -> a -> a
+
+-- | Note [Wrapping the BLS12-381 types in PlutusTx]
+--   
+--   As explained in Note [Wrapping the BLS12-381 types in Plutus Core],
+--   the types exported by the Haskell bindings for the <tt>blst</tt>
+--   library are ForeignPtrs which have to be wrapped in newtypes to keep
+--   the PLC builtin machinery happy. However, there's a further
+--   complication in PlutusTx: if you try to use the newtypes directly then
+--   the plugin sees through the newtypes to the foreign pointers and fails
+--   because it doesn't know how to handle them. To avoid this we further
+--   wrap the newtypes in datatypes here. We could have done this in Plutus
+--   Core by using `data` instead of `newtype`, but then the code here
+--   dealing with BLS types and builtins doesn't look like the code for the
+--   other builtins. Because of this it seemed safer and more uniform to
+--   add the datatype wrapper here rather than in the Plutus Core code.
+data BuiltinBLS12_381_G1_Element
+bls12_381_G1_equals :: BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G1_Element -> Bool
+bls12_381_G1_add :: BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G1_Element
+bls12_381_G1_scalarMul :: Integer -> BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G1_Element
+bls12_381_G1_neg :: BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G1_Element
+bls12_381_G1_compress :: BuiltinBLS12_381_G1_Element -> BuiltinByteString
+bls12_381_G1_uncompress :: BuiltinByteString -> BuiltinBLS12_381_G1_Element
+bls12_381_G1_hashToGroup :: BuiltinByteString -> BuiltinBLS12_381_G1_Element
+data BuiltinBLS12_381_G2_Element
+bls12_381_G2_equals :: BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_G2_Element -> Bool
+bls12_381_G2_add :: BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_G2_Element
+bls12_381_G2_scalarMul :: Integer -> BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_G2_Element
+bls12_381_G2_neg :: BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_G2_Element
+bls12_381_G2_compress :: BuiltinBLS12_381_G2_Element -> BuiltinByteString
+bls12_381_G2_uncompress :: BuiltinByteString -> BuiltinBLS12_381_G2_Element
+bls12_381_G2_hashToGroup :: BuiltinByteString -> BuiltinBLS12_381_G2_Element
+data BuiltinBLS12_381_MlResult
+bls12_381_millerLoop :: BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_MlResult
+bls12_381_mulMlResult :: BuiltinBLS12_381_MlResult -> BuiltinBLS12_381_MlResult -> BuiltinBLS12_381_MlResult
+bls12_381_finalVerify :: BuiltinBLS12_381_MlResult -> BuiltinBLS12_381_MlResult -> Bool
 fromBuiltin :: FromBuiltin arep a => arep -> a
 toBuiltin :: ToBuiltin a arep => a -> arep
 
@@ -892,6 +983,9 @@ instance Universe.Core.Includes uni PlutusCore.Data.Data => PlutusTx.Lift.Class.
 instance Universe.Core.Includes uni Data.ByteString.Internal.ByteString => PlutusTx.Lift.Class.Lift uni PlutusTx.Builtins.Internal.BuiltinByteString
 instance Universe.Core.Includes uni Data.Text.Internal.Text => PlutusTx.Lift.Class.Lift uni PlutusTx.Builtins.Internal.BuiltinString
 instance (PlutusTx.Builtins.Class.FromBuiltin arep a, Universe.Core.Includes uni [a]) => PlutusTx.Lift.Class.Lift uni (PlutusTx.Builtins.Internal.BuiltinList arep)
+instance Universe.Core.Includes uni PlutusCore.Crypto.BLS12_381.G1.Element => PlutusTx.Lift.Class.Lift uni PlutusTx.Builtins.Internal.BuiltinBLS12_381_G1_Element
+instance Universe.Core.Includes uni PlutusCore.Crypto.BLS12_381.G2.Element => PlutusTx.Lift.Class.Lift uni PlutusTx.Builtins.Internal.BuiltinBLS12_381_G2_Element
+instance Universe.Core.Includes uni PlutusCore.Crypto.BLS12_381.Pairing.MlResult => PlutusTx.Lift.Class.Lift uni PlutusTx.Builtins.Internal.BuiltinBLS12_381_MlResult
 instance forall (uni :: * -> *) k (f :: * -> k) a. (PlutusTx.Lift.Class.Typeable uni f, PlutusTx.Lift.Class.Typeable uni a) => PlutusTx.Lift.Class.Typeable uni (f a)
 instance PlutusTx.Lift.Class.Typeable uni (->)
 instance (TypeError ...) => PlutusTx.Lift.Class.Typeable uni GHC.Types.Int
@@ -2228,6 +2322,41 @@ round :: Rational -> Integer
 --   <a>builtinDataToData</a> and <a>dataToBuiltinData</a>, but note that
 --   these will not work on-chain.
 data BuiltinData
+
+-- | Note [Wrapping the BLS12-381 types in PlutusTx]
+--   
+--   As explained in Note [Wrapping the BLS12-381 types in Plutus Core],
+--   the types exported by the Haskell bindings for the <tt>blst</tt>
+--   library are ForeignPtrs which have to be wrapped in newtypes to keep
+--   the PLC builtin machinery happy. However, there's a further
+--   complication in PlutusTx: if you try to use the newtypes directly then
+--   the plugin sees through the newtypes to the foreign pointers and fails
+--   because it doesn't know how to handle them. To avoid this we further
+--   wrap the newtypes in datatypes here. We could have done this in Plutus
+--   Core by using `data` instead of `newtype`, but then the code here
+--   dealing with BLS types and builtins doesn't look like the code for the
+--   other builtins. Because of this it seemed safer and more uniform to
+--   add the datatype wrapper here rather than in the Plutus Core code.
+data BuiltinBLS12_381_G1_Element
+bls12_381_G1_equals :: BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G1_Element -> Bool
+bls12_381_G1_add :: BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G1_Element
+bls12_381_G1_neg :: BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G1_Element
+bls12_381_G1_scalarMul :: Integer -> BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G1_Element
+bls12_381_G1_compress :: BuiltinBLS12_381_G1_Element -> BuiltinByteString
+bls12_381_G1_uncompress :: BuiltinByteString -> BuiltinBLS12_381_G1_Element
+bls12_381_G1_hashToGroup :: BuiltinByteString -> BuiltinBLS12_381_G1_Element
+data BuiltinBLS12_381_G2_Element
+bls12_381_G2_equals :: BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_G2_Element -> Bool
+bls12_381_G2_add :: BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_G2_Element
+bls12_381_G2_neg :: BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_G2_Element
+bls12_381_G2_scalarMul :: Integer -> BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_G2_Element
+bls12_381_G2_compress :: BuiltinBLS12_381_G2_Element -> BuiltinByteString
+bls12_381_G2_uncompress :: BuiltinByteString -> BuiltinBLS12_381_G2_Element
+bls12_381_G2_hashToGroup :: BuiltinByteString -> BuiltinBLS12_381_G2_Element
+data BuiltinBLS12_381_MlResult
+bls12_381_millerLoop :: BuiltinBLS12_381_G1_Element -> BuiltinBLS12_381_G2_Element -> BuiltinBLS12_381_MlResult
+bls12_381_mulMlResult :: BuiltinBLS12_381_MlResult -> BuiltinBLS12_381_MlResult -> BuiltinBLS12_381_MlResult
+bls12_381_finalVerify :: BuiltinBLS12_381_MlResult -> BuiltinBLS12_381_MlResult -> Bool
 fromBuiltin :: FromBuiltin arep a => arep -> a
 toBuiltin :: ToBuiltin a arep => a -> arep
 

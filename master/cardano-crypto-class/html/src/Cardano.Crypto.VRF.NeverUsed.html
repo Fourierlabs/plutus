@@ -22,10 +22,10 @@
 </span><span id="line-22"></span><span class="hs-comment">-- trying to sign or verify something a runtime exception will be thrown.</span><span>
 </span><span id="line-23"></span><span class="hs-keyword">data</span><span> </span><span id="NeverVRF"><span class="annot"><a href="Cardano.Crypto.VRF.NeverUsed.html#NeverVRF"><span class="hs-identifier hs-var">NeverVRF</span></a></span></span><span>
 </span><span id="line-24"></span><span>
-</span><span id="line-25"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679206622"><span id="local-6989586621679206627"><span class="annot"><a href="Cardano.Crypto.VRF.Class.html#VRFAlgorithm"><span class="hs-identifier hs-type">VRFAlgorithm</span></a></span><span> </span><span class="annot"><a href="Cardano.Crypto.VRF.NeverUsed.html#NeverVRF"><span class="hs-identifier hs-type">NeverVRF</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679213030"><span id="local-6989586621679213035"><span class="annot"><a href="Cardano.Crypto.VRF.Class.html#VRFAlgorithm"><span class="hs-identifier hs-type">VRFAlgorithm</span></a></span><span> </span><span class="annot"><a href="Cardano.Crypto.VRF.NeverUsed.html#NeverVRF"><span class="hs-identifier hs-type">NeverVRF</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
 </span><span id="line-26"></span><span>
 </span><span id="line-27"></span><span>  </span><span class="hs-keyword">data</span><span> </span><span id="VerKeyVRF"><span class="annot"><a href="Cardano.Crypto.VRF.Class.html#VerKeyVRF"><span class="hs-identifier hs-var">VerKeyVRF</span></a></span></span><span> </span><span class="annot"><a href="Cardano.Crypto.VRF.NeverUsed.html#NeverVRF"><span class="hs-identifier hs-type">NeverVRF</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="NeverUsedVerKeyVRF"><span class="annot"><a href="Cardano.Crypto.VRF.NeverUsed.html#NeverUsedVerKeyVRF"><span class="hs-identifier hs-var">NeverUsedVerKeyVRF</span></a></span></span><span>
-</span><span id="line-28"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679206601"><span id="local-6989586621679206603"><span id="local-6989586621679206605"><span class="annot"><span class="annottext">Int -&gt; VerKeyVRF NeverVRF -&gt; ShowS
+</span><span id="line-28"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679213009"><span id="local-6989586621679213011"><span id="local-6989586621679213013"><span class="annot"><span class="annottext">Int -&gt; VerKeyVRF NeverVRF -&gt; ShowS
 [VerKeyVRF NeverVRF] -&gt; ShowS
 VerKeyVRF NeverVRF -&gt; String
 forall a.
@@ -36,7 +36,7 @@ show :: VerKeyVRF NeverVRF -&gt; String
 $cshow :: VerKeyVRF NeverVRF -&gt; String
 showsPrec :: Int -&gt; VerKeyVRF NeverVRF -&gt; ShowS
 $cshowsPrec :: Int -&gt; VerKeyVRF NeverVRF -&gt; ShowS
-</span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679206596"><span id="local-6989586621679206598"><span class="annot"><span class="annottext">VerKeyVRF NeverVRF -&gt; VerKeyVRF NeverVRF -&gt; Bool
+</span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679213004"><span id="local-6989586621679213006"><span class="annot"><span class="annottext">VerKeyVRF NeverVRF -&gt; VerKeyVRF NeverVRF -&gt; Bool
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
 /= :: VerKeyVRF NeverVRF -&gt; VerKeyVRF NeverVRF -&gt; Bool
 $c/= :: VerKeyVRF NeverVRF -&gt; VerKeyVRF NeverVRF -&gt; Bool
@@ -48,7 +48,7 @@ forall a.
 (forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
 $cto :: forall x. Rep (VerKeyVRF NeverVRF) x -&gt; VerKeyVRF NeverVRF
 $cfrom :: forall x. VerKeyVRF NeverVRF -&gt; Rep (VerKeyVRF NeverVRF) x
-</span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></a></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679206586"><span id="local-6989586621679206588"><span id="local-6989586621679206590"><span class="annot"><span class="annottext">Context -&gt; VerKeyVRF NeverVRF -&gt; IO (Maybe ThunkInfo)
+</span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></a></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679212994"><span id="local-6989586621679212996"><span id="local-6989586621679212998"><span class="annot"><span class="annottext">Context -&gt; VerKeyVRF NeverVRF -&gt; IO (Maybe ThunkInfo)
 Proxy (VerKeyVRF NeverVRF) -&gt; String
 forall a.
 (Context -&gt; a -&gt; IO (Maybe ThunkInfo))
@@ -64,7 +64,7 @@ $cnoThunks :: Context -&gt; VerKeyVRF NeverVRF -&gt; IO (Maybe ThunkInfo)
 </span><a href="../../../../nothunks/html/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">NoThunks</span></a></span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-29"></span><span>
 </span><span id="line-30"></span><span>  </span><span class="hs-keyword">data</span><span> </span><span id="SignKeyVRF"><span class="annot"><a href="Cardano.Crypto.VRF.Class.html#SignKeyVRF"><span class="hs-identifier hs-var">SignKeyVRF</span></a></span></span><span> </span><span class="annot"><a href="Cardano.Crypto.VRF.NeverUsed.html#NeverVRF"><span class="hs-identifier hs-type">NeverVRF</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="NeverUsedSignKeyVRF"><span class="annot"><a href="Cardano.Crypto.VRF.NeverUsed.html#NeverUsedSignKeyVRF"><span class="hs-identifier hs-var">NeverUsedSignKeyVRF</span></a></span></span><span>
-</span><span id="line-31"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679206576"><span id="local-6989586621679206578"><span id="local-6989586621679206580"><span class="annot"><span class="annottext">Int -&gt; SignKeyVRF NeverVRF -&gt; ShowS
+</span><span id="line-31"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679212984"><span id="local-6989586621679212986"><span id="local-6989586621679212988"><span class="annot"><span class="annottext">Int -&gt; SignKeyVRF NeverVRF -&gt; ShowS
 [SignKeyVRF NeverVRF] -&gt; ShowS
 SignKeyVRF NeverVRF -&gt; String
 forall a.
@@ -75,7 +75,7 @@ show :: SignKeyVRF NeverVRF -&gt; String
 $cshow :: SignKeyVRF NeverVRF -&gt; String
 showsPrec :: Int -&gt; SignKeyVRF NeverVRF -&gt; ShowS
 $cshowsPrec :: Int -&gt; SignKeyVRF NeverVRF -&gt; ShowS
-</span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679206572"><span id="local-6989586621679206574"><span class="annot"><span class="annottext">SignKeyVRF NeverVRF -&gt; SignKeyVRF NeverVRF -&gt; Bool
+</span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679212980"><span id="local-6989586621679212982"><span class="annot"><span class="annottext">SignKeyVRF NeverVRF -&gt; SignKeyVRF NeverVRF -&gt; Bool
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
 /= :: SignKeyVRF NeverVRF -&gt; SignKeyVRF NeverVRF -&gt; Bool
 $c/= :: SignKeyVRF NeverVRF -&gt; SignKeyVRF NeverVRF -&gt; Bool
@@ -87,7 +87,7 @@ forall a.
 (forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
 $cto :: forall x. Rep (SignKeyVRF NeverVRF) x -&gt; SignKeyVRF NeverVRF
 $cfrom :: forall x. SignKeyVRF NeverVRF -&gt; Rep (SignKeyVRF NeverVRF) x
-</span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></a></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679206564"><span id="local-6989586621679206566"><span id="local-6989586621679206568"><span class="annot"><span class="annottext">Context -&gt; SignKeyVRF NeverVRF -&gt; IO (Maybe ThunkInfo)
+</span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></a></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679212972"><span id="local-6989586621679212974"><span id="local-6989586621679212976"><span class="annot"><span class="annottext">Context -&gt; SignKeyVRF NeverVRF -&gt; IO (Maybe ThunkInfo)
 Proxy (SignKeyVRF NeverVRF) -&gt; String
 forall a.
 (Context -&gt; a -&gt; IO (Maybe ThunkInfo))
@@ -100,10 +100,10 @@ wNoThunks :: Context -&gt; SignKeyVRF NeverVRF -&gt; IO (Maybe ThunkInfo)
 $cwNoThunks :: Context -&gt; SignKeyVRF NeverVRF -&gt; IO (Maybe ThunkInfo)
 noThunks :: Context -&gt; SignKeyVRF NeverVRF -&gt; IO (Maybe ThunkInfo)
 $cnoThunks :: Context -&gt; SignKeyVRF NeverVRF -&gt; IO (Maybe ThunkInfo)
-</span><a href="#local-6989586621679206564"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">NoThunks</span></a></span></span></span></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679212972"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">NoThunks</span></a></span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-32"></span><span>
 </span><span id="line-33"></span><span>  </span><span class="hs-keyword">data</span><span> </span><span id="CertVRF"><span class="annot"><a href="Cardano.Crypto.VRF.Class.html#CertVRF"><span class="hs-identifier hs-var">CertVRF</span></a></span></span><span> </span><span class="annot"><a href="Cardano.Crypto.VRF.NeverUsed.html#NeverVRF"><span class="hs-identifier hs-type">NeverVRF</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="NeverUsedCertVRF"><span class="annot"><a href="Cardano.Crypto.VRF.NeverUsed.html#NeverUsedCertVRF"><span class="hs-identifier hs-var">NeverUsedCertVRF</span></a></span></span><span>
-</span><span id="line-34"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679206555"><span id="local-6989586621679206557"><span id="local-6989586621679206559"><span class="annot"><span class="annottext">Int -&gt; CertVRF NeverVRF -&gt; ShowS
+</span><span id="line-34"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679212963"><span id="local-6989586621679212965"><span id="local-6989586621679212967"><span class="annot"><span class="annottext">Int -&gt; CertVRF NeverVRF -&gt; ShowS
 [CertVRF NeverVRF] -&gt; ShowS
 CertVRF NeverVRF -&gt; String
 forall a.
@@ -114,13 +114,13 @@ show :: CertVRF NeverVRF -&gt; String
 $cshow :: CertVRF NeverVRF -&gt; String
 showsPrec :: Int -&gt; CertVRF NeverVRF -&gt; ShowS
 $cshowsPrec :: Int -&gt; CertVRF NeverVRF -&gt; ShowS
-</span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679206551"><span id="local-6989586621679206553"><span class="annot"><span class="annottext">CertVRF NeverVRF -&gt; CertVRF NeverVRF -&gt; Bool
+</span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679212959"><span id="local-6989586621679212961"><span class="annot"><span class="annottext">CertVRF NeverVRF -&gt; CertVRF NeverVRF -&gt; Bool
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
 /= :: CertVRF NeverVRF -&gt; CertVRF NeverVRF -&gt; Bool
 $c/= :: CertVRF NeverVRF -&gt; CertVRF NeverVRF -&gt; Bool
 == :: CertVRF NeverVRF -&gt; CertVRF NeverVRF -&gt; Bool
 $c== :: CertVRF NeverVRF -&gt; CertVRF NeverVRF -&gt; Bool
-</span><a href="../../../../ghc/html/libraries/ghc-prim-0.8.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679206532"><span id="local-6989586621679206534"><span id="local-6989586621679206537"><span id="local-6989586621679206540"><span id="local-6989586621679206543"><span id="local-6989586621679206545"><span id="local-6989586621679206547"><span class="annot"><span class="annottext">Eq (CertVRF NeverVRF)
+</span><a href="../../../../ghc/html/libraries/ghc-prim-0.8.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679212940"><span id="local-6989586621679212942"><span id="local-6989586621679212945"><span id="local-6989586621679212948"><span id="local-6989586621679212951"><span id="local-6989586621679212953"><span id="local-6989586621679212955"><span class="annot"><span class="annottext">Eq (CertVRF NeverVRF)
 CertVRF NeverVRF -&gt; CertVRF NeverVRF -&gt; Bool
 CertVRF NeverVRF -&gt; CertVRF NeverVRF -&gt; Ordering
 CertVRF NeverVRF -&gt; CertVRF NeverVRF -&gt; CertVRF NeverVRF
@@ -154,7 +154,7 @@ forall a.
 (forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
 $cto :: forall x. Rep (CertVRF NeverVRF) x -&gt; CertVRF NeverVRF
 $cfrom :: forall x. CertVRF NeverVRF -&gt; Rep (CertVRF NeverVRF) x
-</span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></a></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679206523"><span id="local-6989586621679206525"><span id="local-6989586621679206527"><span class="annot"><span class="annottext">Context -&gt; CertVRF NeverVRF -&gt; IO (Maybe ThunkInfo)
+</span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var hs-var hs-var hs-var">Generic</span></a></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679212931"><span id="local-6989586621679212933"><span id="local-6989586621679212935"><span class="annot"><span class="annottext">Context -&gt; CertVRF NeverVRF -&gt; IO (Maybe ThunkInfo)
 Proxy (CertVRF NeverVRF) -&gt; String
 forall a.
 (Context -&gt; a -&gt; IO (Maybe ThunkInfo))
@@ -167,19 +167,19 @@ wNoThunks :: Context -&gt; CertVRF NeverVRF -&gt; IO (Maybe ThunkInfo)
 $cwNoThunks :: Context -&gt; CertVRF NeverVRF -&gt; IO (Maybe ThunkInfo)
 noThunks :: Context -&gt; CertVRF NeverVRF -&gt; IO (Maybe ThunkInfo)
 $cnoThunks :: Context -&gt; CertVRF NeverVRF -&gt; IO (Maybe ThunkInfo)
-</span><a href="#local-6989586621679206523"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">NoThunks</span></a></span></span></span></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679212931"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">NoThunks</span></a></span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-35"></span><span>
-</span><span id="line-36"></span><span>  </span><span id="local-6989586621679206522"><span class="annot"><span class="annottext">algorithmNameVRF :: forall (proxy :: * -&gt; *). proxy NeverVRF -&gt; String
+</span><span id="line-36"></span><span>  </span><span id="local-6989586621679212930"><span class="annot"><span class="annottext">algorithmNameVRF :: forall (proxy :: * -&gt; *). proxy NeverVRF -&gt; String
 </span><a href="Cardano.Crypto.VRF.Class.html#algorithmNameVRF"><span class="hs-identifier hs-var hs-var hs-var hs-var">algorithmNameVRF</span></a></span></span><span> </span><span class="annot"><span class="annottext">proxy NeverVRF
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;never&quot;</span></span><span>
 </span><span id="line-37"></span><span>
-</span><span id="line-38"></span><span>  </span><span id="local-6989586621679206520"><span class="annot"><span class="annottext">deriveVerKeyVRF :: SignKeyVRF NeverVRF -&gt; VerKeyVRF NeverVRF
+</span><span id="line-38"></span><span>  </span><span id="local-6989586621679212928"><span class="annot"><span class="annottext">deriveVerKeyVRF :: SignKeyVRF NeverVRF -&gt; VerKeyVRF NeverVRF
 </span><a href="Cardano.Crypto.VRF.Class.html#deriveVerKeyVRF"><span class="hs-identifier hs-var hs-var hs-var hs-var">deriveVerKeyVRF</span></a></span></span><span> </span><span class="annot"><span class="annottext">SignKeyVRF NeverVRF
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">VerKeyVRF NeverVRF
 </span><a href="Cardano.Crypto.VRF.NeverUsed.html#NeverUsedVerKeyVRF"><span class="hs-identifier hs-var">NeverUsedVerKeyVRF</span></a></span><span>
 </span><span id="line-39"></span><span>
-</span><span id="line-40"></span><span>  </span><span id="local-6989586621679206514"><span class="annot"><span class="annottext">evalVRF :: forall a.
+</span><span id="line-40"></span><span>  </span><span id="local-6989586621679212922"><span class="annot"><span class="annottext">evalVRF :: forall a.
 (HasCallStack, Signable NeverVRF a) =&gt;
 ContextVRF NeverVRF
 -&gt; a
@@ -189,7 +189,7 @@ ContextVRF NeverVRF
 </span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var">error</span></a></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;VRF unavailable&quot;</span></span><span>
 </span><span id="line-41"></span><span>
-</span><span id="line-42"></span><span>  </span><span id="local-6989586621679206507"><span class="annot"><span class="annottext">verifyVRF :: forall a.
+</span><span id="line-42"></span><span>  </span><span id="local-6989586621679212915"><span class="annot"><span class="annottext">verifyVRF :: forall a.
 (HasCallStack, Signable NeverVRF a) =&gt;
 ContextVRF NeverVRF
 -&gt; VerKeyVRF NeverVRF
@@ -200,57 +200,57 @@ ContextVRF NeverVRF
 </span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var">error</span></a></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;VRF unavailable&quot;</span></span><span>
 </span><span id="line-43"></span><span>
-</span><span id="line-44"></span><span>  </span><span id="local-6989586621679206505"><span class="annot"><span class="annottext">sizeOutputVRF :: forall (proxy :: * -&gt; *). proxy NeverVRF -&gt; Word
+</span><span id="line-44"></span><span>  </span><span id="local-6989586621679212913"><span class="annot"><span class="annottext">sizeOutputVRF :: forall (proxy :: * -&gt; *). proxy NeverVRF -&gt; Word
 </span><a href="Cardano.Crypto.VRF.Class.html#sizeOutputVRF"><span class="hs-identifier hs-var hs-var hs-var hs-var">sizeOutputVRF</span></a></span></span><span> </span><span class="annot"><span class="annottext">proxy NeverVRF
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word
 </span><span class="hs-number">0</span></span><span>
 </span><span id="line-45"></span><span>
-</span><span id="line-46"></span><span>  </span><span id="local-6989586621679206503"><span class="annot"><span class="annottext">genKeyVRF :: Seed -&gt; SignKeyVRF NeverVRF
+</span><span id="line-46"></span><span>  </span><span id="local-6989586621679212911"><span class="annot"><span class="annottext">genKeyVRF :: Seed -&gt; SignKeyVRF NeverVRF
 </span><a href="Cardano.Crypto.VRF.Class.html#genKeyVRF"><span class="hs-identifier hs-var hs-var hs-var hs-var">genKeyVRF</span></a></span></span><span> </span><span class="annot"><span class="annottext">Seed
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SignKeyVRF NeverVRF
 </span><a href="Cardano.Crypto.VRF.NeverUsed.html#NeverUsedSignKeyVRF"><span class="hs-identifier hs-var">NeverUsedSignKeyVRF</span></a></span><span>
-</span><span id="line-47"></span><span>  </span><span id="local-6989586621679206501"><span class="annot"><span class="annottext">seedSizeVRF :: forall (proxy :: * -&gt; *). proxy NeverVRF -&gt; Word
+</span><span id="line-47"></span><span>  </span><span id="local-6989586621679212909"><span class="annot"><span class="annottext">seedSizeVRF :: forall (proxy :: * -&gt; *). proxy NeverVRF -&gt; Word
 </span><a href="Cardano.Crypto.VRF.Class.html#seedSizeVRF"><span class="hs-identifier hs-var hs-var hs-var hs-var">seedSizeVRF</span></a></span></span><span> </span><span class="annot"><span class="annottext">proxy NeverVRF
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word
 </span><span class="hs-number">0</span></span><span>
 </span><span id="line-48"></span><span>
-</span><span id="line-49"></span><span>  </span><span id="local-6989586621679206499"><span class="annot"><span class="annottext">sizeVerKeyVRF :: forall (proxy :: * -&gt; *). proxy NeverVRF -&gt; Word
+</span><span id="line-49"></span><span>  </span><span id="local-6989586621679212907"><span class="annot"><span class="annottext">sizeVerKeyVRF :: forall (proxy :: * -&gt; *). proxy NeverVRF -&gt; Word
 </span><a href="Cardano.Crypto.VRF.Class.html#sizeVerKeyVRF"><span class="hs-identifier hs-var hs-var hs-var hs-var">sizeVerKeyVRF</span></a></span></span><span>  </span><span class="annot"><span class="annottext">proxy NeverVRF
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word
 </span><span class="hs-number">0</span></span><span>
-</span><span id="line-50"></span><span>  </span><span id="local-6989586621679206497"><span class="annot"><span class="annottext">sizeSignKeyVRF :: forall (proxy :: * -&gt; *). proxy NeverVRF -&gt; Word
+</span><span id="line-50"></span><span>  </span><span id="local-6989586621679212905"><span class="annot"><span class="annottext">sizeSignKeyVRF :: forall (proxy :: * -&gt; *). proxy NeverVRF -&gt; Word
 </span><a href="Cardano.Crypto.VRF.Class.html#sizeSignKeyVRF"><span class="hs-identifier hs-var hs-var hs-var hs-var">sizeSignKeyVRF</span></a></span></span><span> </span><span class="annot"><span class="annottext">proxy NeverVRF
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word
 </span><span class="hs-number">0</span></span><span>
-</span><span id="line-51"></span><span>  </span><span id="local-6989586621679206495"><span class="annot"><span class="annottext">sizeCertVRF :: forall (proxy :: * -&gt; *). proxy NeverVRF -&gt; Word
+</span><span id="line-51"></span><span>  </span><span id="local-6989586621679212903"><span class="annot"><span class="annottext">sizeCertVRF :: forall (proxy :: * -&gt; *). proxy NeverVRF -&gt; Word
 </span><a href="Cardano.Crypto.VRF.Class.html#sizeCertVRF"><span class="hs-identifier hs-var hs-var hs-var hs-var">sizeCertVRF</span></a></span></span><span>    </span><span class="annot"><span class="annottext">proxy NeverVRF
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word
 </span><span class="hs-number">0</span></span><span>
 </span><span id="line-52"></span><span>
-</span><span id="line-53"></span><span>  </span><span id="local-6989586621679206491"><span class="annot"><span class="annottext">rawSerialiseVerKeyVRF :: VerKeyVRF NeverVRF -&gt; ByteString
+</span><span id="line-53"></span><span>  </span><span id="local-6989586621679212899"><span class="annot"><span class="annottext">rawSerialiseVerKeyVRF :: VerKeyVRF NeverVRF -&gt; ByteString
 </span><a href="Cardano.Crypto.VRF.Class.html#rawSerialiseVerKeyVRF"><span class="hs-identifier hs-var hs-var hs-var hs-var">rawSerialiseVerKeyVRF</span></a></span></span><span>  </span><span class="annot"><span class="annottext">VerKeyVRF NeverVRF
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall a. Monoid a =&gt; a
 </span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var">mempty</span></a></span><span>
-</span><span id="line-54"></span><span>  </span><span id="local-6989586621679206488"><span class="annot"><span class="annottext">rawSerialiseSignKeyVRF :: SignKeyVRF NeverVRF -&gt; ByteString
+</span><span id="line-54"></span><span>  </span><span id="local-6989586621679212896"><span class="annot"><span class="annottext">rawSerialiseSignKeyVRF :: SignKeyVRF NeverVRF -&gt; ByteString
 </span><a href="Cardano.Crypto.VRF.Class.html#rawSerialiseSignKeyVRF"><span class="hs-identifier hs-var hs-var hs-var hs-var">rawSerialiseSignKeyVRF</span></a></span></span><span> </span><span class="annot"><span class="annottext">SignKeyVRF NeverVRF
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall a. Monoid a =&gt; a
 </span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var">mempty</span></a></span><span>
-</span><span id="line-55"></span><span>  </span><span id="local-6989586621679206485"><span class="annot"><span class="annottext">rawSerialiseCertVRF :: CertVRF NeverVRF -&gt; ByteString
+</span><span id="line-55"></span><span>  </span><span id="local-6989586621679212893"><span class="annot"><span class="annottext">rawSerialiseCertVRF :: CertVRF NeverVRF -&gt; ByteString
 </span><a href="Cardano.Crypto.VRF.Class.html#rawSerialiseCertVRF"><span class="hs-identifier hs-var hs-var hs-var hs-var">rawSerialiseCertVRF</span></a></span></span><span>    </span><span class="annot"><span class="annottext">CertVRF NeverVRF
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall a. Monoid a =&gt; a
 </span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var">mempty</span></a></span><span>
 </span><span id="line-56"></span><span>
-</span><span id="line-57"></span><span>  </span><span id="local-6989586621679206483"><span class="annot"><span class="annottext">rawDeserialiseVerKeyVRF :: ByteString -&gt; Maybe (VerKeyVRF NeverVRF)
+</span><span id="line-57"></span><span>  </span><span id="local-6989586621679212891"><span class="annot"><span class="annottext">rawDeserialiseVerKeyVRF :: ByteString -&gt; Maybe (VerKeyVRF NeverVRF)
 </span><a href="Cardano.Crypto.VRF.Class.html#rawDeserialiseVerKeyVRF"><span class="hs-identifier hs-var hs-var hs-var hs-var">rawDeserialiseVerKeyVRF</span></a></span></span><span>  </span><span class="annot"><span class="annottext">ByteString
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall a. a -&gt; Maybe a
 </span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">VerKeyVRF NeverVRF
 </span><a href="Cardano.Crypto.VRF.NeverUsed.html#NeverUsedVerKeyVRF"><span class="hs-identifier hs-var">NeverUsedVerKeyVRF</span></a></span><span>
-</span><span id="line-58"></span><span>  </span><span id="local-6989586621679206481"><span class="annot"><span class="annottext">rawDeserialiseSignKeyVRF :: ByteString -&gt; Maybe (SignKeyVRF NeverVRF)
+</span><span id="line-58"></span><span>  </span><span id="local-6989586621679212889"><span class="annot"><span class="annottext">rawDeserialiseSignKeyVRF :: ByteString -&gt; Maybe (SignKeyVRF NeverVRF)
 </span><a href="Cardano.Crypto.VRF.Class.html#rawDeserialiseSignKeyVRF"><span class="hs-identifier hs-var hs-var hs-var hs-var">rawDeserialiseSignKeyVRF</span></a></span></span><span> </span><span class="annot"><span class="annottext">ByteString
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall a. a -&gt; Maybe a
 </span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">SignKeyVRF NeverVRF
 </span><a href="Cardano.Crypto.VRF.NeverUsed.html#NeverUsedSignKeyVRF"><span class="hs-identifier hs-var">NeverUsedSignKeyVRF</span></a></span><span>
-</span><span id="line-59"></span><span>  </span><span id="local-6989586621679206479"><span class="annot"><span class="annottext">rawDeserialiseCertVRF :: ByteString -&gt; Maybe (CertVRF NeverVRF)
+</span><span id="line-59"></span><span>  </span><span id="local-6989586621679212887"><span class="annot"><span class="annottext">rawDeserialiseCertVRF :: ByteString -&gt; Maybe (CertVRF NeverVRF)
 </span><a href="Cardano.Crypto.VRF.Class.html#rawDeserialiseCertVRF"><span class="hs-identifier hs-var hs-var hs-var hs-var">rawDeserialiseCertVRF</span></a></span></span><span>    </span><span class="annot"><span class="annottext">ByteString
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall a. a -&gt; Maybe a
 </span><a href="../../../../ghc/html/libraries/base-4.16.4.0/src"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">CertVRF NeverVRF
