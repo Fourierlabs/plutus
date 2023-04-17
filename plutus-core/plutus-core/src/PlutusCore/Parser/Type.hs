@@ -48,8 +48,14 @@ ifixType = withSpan $ \sp ->
 
 builtinType :: Parser PType
 builtinType = withSpan $ \sp -> inParens $ do
-    SomeTypeIn (Kinded uni) <- (symbol "con" *> defaultUni)
+    SomeTypeIn (Kinded uni) <- symbol "con" *> defaultUni
     pure $ TyBuiltin sp (SomeTypeIn uni)
+
+sopType :: Parser PType
+sopType = withSpan $ \sp -> inParens $ TySOP sp <$> (symbol "sop" *> many tyList)
+  where
+    tyList :: Parser [PType]
+    tyList = (inBrackets $ many pType) <* whitespace
 
 appType :: Parser PType
 appType = withSpan $ \sp -> inBrackets $ do
@@ -73,6 +79,7 @@ pType = choice $ map try
     , lamType
     , appType
     , varType
+    , sopType
     ]
 
 -- | Parser for built-in type applications.  The textual names here should match
@@ -133,7 +140,7 @@ defaultUni = choice $ map try
     , someType @_ @Data                 <$ symbol "data"
     , someType @_ @BLS12_381.G1.Element <$ symbol "bls12_381_G1_element"
     , someType @_ @BLS12_381.G2.Element <$ symbol "bls12_381_G2_element"
-    -- BLS12_381.G2.MlResult is deliberately not supported.
+    -- BLS12_381.Pairing.MlResult is deliberately not supported.
     ]
 
 tyName :: Parser TyName
